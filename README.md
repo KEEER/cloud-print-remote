@@ -26,9 +26,11 @@ To-do list
 - [ ] Login (Andy)
 - [ ] Calculate Price (Egamad)
 
+
 - [ ] Request Printer IPs (Welen)
 - [ ] Update Printer IP (Welen)
 - [ ] Status Report (Andy)
+
 
 ###### Login 登录（或注册）
 
