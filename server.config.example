@@ -1,0 +1,11 @@
+[Server]
+host = 127.0.0.1
+port = 80
+debug = True
+maximum_threads = 128
+[Database]
+host = 127.0.0.1
+port = 5432
+database = CloudPrintRemote
+user = postgres
+password = ******
