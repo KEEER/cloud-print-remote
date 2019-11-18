@@ -18,14 +18,17 @@ To-do list
 -----------
 *A bullet point with a cross means finished.*
 
-- [ ] Login
-- [ ] Request Job Codes
-- [ ] Request Job Token
-- [ ] Request Printer IPs
-- [ ] Update Printer IP
-- [ ] Calculate Price
-- [ ] Print
-- [ ] Status Report
+
+- [ ] Request Job Codes (Egamad)
+- [ ] Request Job Token (Queue)
+- [ ] Print (Queue)
+
+- [ ] Login (Andy)
+- [ ] Calculate Price (Egamad)
+
+- [ ] Request Printer IPs (Welen)
+- [ ] Update Printer IP (Welen)
+- [ ] Status Report (Andy)
 
 ###### Login 登录（或注册）
 
