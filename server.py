@@ -9,9 +9,12 @@ import waitress
 
 initialize_logging_module()
 
+# don't use __name__ for this one, but for ALL others
+main_logger = logging.getLogger('main')
+
+
 if __name__ == '__main__':
-    # don't use __name__ for this one, but for ALL others
-    main_logger = logging.getLogger('main')
+    
     server = Flask(__name__)
     # load all blueprints here
     try:
