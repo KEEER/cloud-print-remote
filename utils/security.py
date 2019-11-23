@@ -8,6 +8,7 @@ import rsa
 # we load the private key here from a pem file
 with open('private_key','rb') as fr:
     _keydata = fr.read()
+    fr.close()
 _rsa_private_key = rsa.PrivateKey.load_pkcs1(_keydata)
 
 def kas_sign(value):
@@ -37,5 +38,5 @@ def secured_sign(value):
     Encrypts and signs `value` by private key according to Cloud Print standard.
     """
     global _rsa_private_key
-    return rsa.sign(value+ServerConfig.cp_secret_key, _rsa_private_key, 'SHA-256')
+    return rsa.sign(bytes(value+ServerConfig.cp_secret_key, encoding = 'utf8'), _rsa_private_key, 'SHA-256').hex()
 

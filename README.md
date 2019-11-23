@@ -1,6 +1,15 @@
 Cloud Print Remote
 ==================
   This is the document describing the structure and tasks of this project.
+  
+分工
+---
+- account-related
+  - [ ] Login
+  - [ ] RequestJobCodes
+  - [ ] RequestJobTOken
+- independent
+- printer-related
 
 APIs
 ---
@@ -14,22 +23,6 @@ APIs
 | CalculatePrice    | 基于打印配置计算价格                                 |
 | Print             | 支付并打印一项打印任务                               |
 | StatusReport      | 报告打印机状态                                       |
-To-do list
------------
-*A bullet point with a cross means finished.*
-
-- account_related
-  - [ ] Request Job Codes (Egamad)
-  - [ ] Request Job Token (Queue)
-  - [ ] Print (Queue)
-  - [ ] Login (Andy)
-- independent
-  - [ ] Calculate Price (Egamad)
-- printer_related
-  - [ ] Request Printer IPs (Welen)
-  - [ ] Update Printer IP (Welen)
-  - [ ] Status Report (Andy)
-
 
 ###### Login 登录（或注册）
 
@@ -45,10 +38,12 @@ To-do list
 
   列举用户下的所有打印任务的打印码
 
-| 参数名 | 参数类型   | 是否一定存在 | 解释                          |
-|--------|------------|--------------|-------------------------------|
-| codes  | Array<int> | 是           | 所有打印码的列表              |
-| sign   | String<32> | 是           | 对于打印码以`','`连接后的签名 |
+返回参数
+
+| 参数名 | 参数类型      | 是否一定存在 | 解释                          |
+|--------|---------------|--------------|-------------------------------|
+| codes  | Array<string> | 是           | 所有打印码的列表              |
+| sign   | String<32>    | 是           | 对于打印码以`','`连接后的签名 |
 
 ###### RequestJobToken（索求打印口令）
 
@@ -60,13 +55,13 @@ To-do list
 
 | 参数名 | 参数类型 | 是否一定存在 | 解释                                                     |
 |--------|----------|--------------|----------------------------------------------------------|
-| code   | int      | 否           | 用于在终端服务器输入开始打印任务的唯一打印码；新任务留空 |
+| code   | string   | 否           | 用于在终端服务器输入开始打印任务的唯一打印码；新任务留空 |
 
   返回参数
 
 | 参数名 | 参数类型   | 是否一定存在 | 解释                                                                                                  |
 |--------|------------|--------------|-------------------------------------------------------------------------------------------------------|
-| code   | int        | 是           | 用于在终端服务器输入开始打印任务的唯一打印码。                                                         |
+| code   | string     | 是           | 用于在终端服务器输入开始打印任务的唯一打印码                                                          |
 | nonce  | UUID       | 是           | 用于确认验证身份的**随机字符串**，任意两次请求此项的值保证**一定不一样**                              |
 | sign   | String(32) | 是           | 使用RSA加密过的包含之前两项以字符串形式拼接的SHA256哈希签名，解密方式为使用终端服务器的公钥进行解密。 |
 
@@ -127,7 +122,7 @@ To-do list
 
 | 参数名        | 参数类型     | 是否必须 | 解释     |
 |---------------|--------------|----------|----------|
-| configuration | Object(Json) | 是       | 打印配置 |
+| config        | Object(Json) | 是       | 打印配置 |
 
   返回参数
 
@@ -143,11 +138,11 @@ To-do list
 
 | 参数名         | 参数类型   | 是否必须 | 解释                       |
 |----------------|------------|----------|----------------------------|
-| code           | int        | 是       | 打印码                     |
-| configurations | String     | 是       | 打印参数，JSON编码         |
+| code           | string     | 是       | 打印码                     |
+| configs        | String     | 是       | 打印参数，JSON编码         |
 | sign           | String<32> | 是       | 对于前两项字符串拼接的签名 |
 
-   - 对于 `configurations` 的进一步解释如下：
+   - 对于 `configs` 的进一步解释如下：
 
 ```json
 [
