@@ -21,6 +21,10 @@ class Session:
     def has_job(self, code):
         return code in self._jobs
 
+    def get_all_jobs(self):
+        return [job for job in self._jobs]
+
+
     def remove_job(self, code):
         if self.has_job(code):
             self._jobs.remove(code)
@@ -46,7 +50,7 @@ class Session:
                 result = cursor.fetchone()
                 if result != None:
                     # create a copy of the list
-                    self._jobs = [i for i in result[0]]
+                    self._jobs = [i for i in result[0]] 
     def __del__(self):
         self.save()
 _sessions = {}

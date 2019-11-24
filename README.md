@@ -40,10 +40,10 @@ APIs
 
 返回参数
 
-| 参数名 | 参数类型      | 是否一定存在 | 解释                          |
-|--------|---------------|--------------|-------------------------------|
-| codes  | Array<string> | 是           | 所有打印码的列表              |
-| sign   | String<32>    | 是           | 对于打印码以`','`连接后的签名 |
+| 参数名 | 参数类型   | 是否一定存在 | 解释                          |
+|--------|------------|--------------|-------------------------------|
+| codes  | Array<int> | 是           | 所有打印码的列表              |
+| sign   | String<32> | 是           | 对于打印码以`','`连接后的签名 |
 
 ###### RequestJobToken（索求打印口令）
 
@@ -122,7 +122,16 @@ APIs
 
 | 参数名        | 参数类型     | 是否必须 | 解释     |
 |---------------|--------------|----------|----------|
-| config        | Object(Json) | 是       | 打印配置 |
+| configuration | Object(Json) | 是       | 打印配置 |
+| printer_id | string | 是 | 终端服务器ID |
+   - 对于 `configuration` 的进一步解释如下：
+
+```json
+  {
+    "page-count": 1,
+    "colored": true
+  }
+```
 
   返回参数
 
@@ -145,23 +154,11 @@ APIs
    - 对于 `configs` 的进一步解释如下：
 
 ```json
-[
-  {
-    "page-count": 1,
-    "colored": true,
-    "double-sided": false
-  },
-  {
-    "page-count": 2,
-    "colored": false,
-    "double-sided": false
-  },
   {
     "page-count": 1,
     "colored": true,
     "double-sided": false
   }
-]
 ```
 
   返回参数
@@ -191,4 +188,15 @@ Some Helpful Things to copy-paste
 
 # [Third-party modules]
 
+```
+
+draft
+---
+```
+[printer1]
+max = 10
+black = 1,2,3,4,5,6,7,8,10
+colored = 2,4,6,8,10,12,14,16,18,20
+
+{}
 ```

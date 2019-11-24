@@ -16,6 +16,8 @@ class CONSTS:
     INVALID_FORM = ('Invalid Form', 400)
     class ROUTES:
         REQUEST_JOB_TOKEN = '/_api/job-token'
+        REQUEST_JOB_CODES = '/_api/codes'
+        
 
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
 logger = logging.getLogger(__name__)
@@ -54,3 +56,13 @@ def process_request_job_token():
             })
 
     
+@account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_CODES, methods = ['GET'])
+@login_required
+def process_request_job_codes():
+    token = request.cookies.get(CONSTS.TOKEN,'')
+    session = get_session_by_token(token)
+    jobs = session.get_all_jobs()
+    return json.dumps({
+        'codes': jobs,
+        'sign': secured_sign(','.join(jobs))
+    })
