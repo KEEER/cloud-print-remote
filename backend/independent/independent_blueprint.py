@@ -1,5 +1,5 @@
 # [In-project modules]
-from independent.price_calculation import calculate_price
+from price_calculation import calculate_price
 # [Python native modules]
 import logging
 import json
