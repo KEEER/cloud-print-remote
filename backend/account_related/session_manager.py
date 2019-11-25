@@ -3,6 +3,7 @@ from utils.kas_info_manager import get_kiuid_by_token, token_is_valid
 from utils.database_operations import connect_to_database
 # [Python native modules]
 import logging
+import random
 # [Third-party modules]
 
 logger = logging.getLogger(__name__)
@@ -27,15 +28,42 @@ class Session:
 
     def remove_job(self, code):
         if self.has_job(code):
+            # remove from the database
+            with connect_to_database() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute('DELETE from print_codes where code = %s', (code, ))
             self._jobs.remove(code)
             self.job_number -= 1
             self.save()
+    def _code_is_valid(self, code):
+        is_valid = True
 
-    def add_job(self, code):
+        with connect_to_database() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT code from print_codes where code = %s', (code, ))
+                if cursor.fetchone() != None:
+                    is_valid = False
+        return is_valid
+
+    def add_job(self):
+        """
+        This will generate a print task and updating it to the database.
+        The final print code will be returned in the type of python string.
+        """
+        # generate four number in the format of string
+        code = ''.join([chr(ord('0')+random.randint(0,9)) for _ in range(4)])
+        while not self._code_is_valid(code):
+            code = ''.join([chr(ord('0')+random.randint(0,9)) for _ in range(4)])
+
+        # update code into database 
+        with connect_to_database() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO print_codes VALUES (%s)', (code, ))
+
         self._jobs.append(code)
         self.job_number += 1
         self.save()
-
+        return code
     def save(self):
         with connect_to_database() as connection:
             with connection.cursor() as cursor:

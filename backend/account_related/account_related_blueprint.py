@@ -33,9 +33,9 @@ def process_request_job_token():
     if code == '':
         # new task mode
         if session.job_number < CONSTS.JOB_NUMBER_LIMIT:
-            code = random.randint(1000, 9999)
+            code = session.add_job(code)
             nonce = str(uuid.uuid1())
-            session.add_job(code)
+            
             return json.dumps({
                 'code': code,
                 'nonce': nonce,
