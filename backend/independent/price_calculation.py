@@ -1,25 +1,11 @@
 # [In-project modules]
-
+from config import endpoint_config
 # [Python native modules]
 import configparser
 import json
 # [Third-party modules]
 
-class CONSTS:
-    ENDPOINT_CONFIG = 'endpoint.config'
-    
-endpoint_parser = configparser.ConfigParser()
-endpoint_parser.read(CONSTS.ENDPOINT_CONFIG)
 
-endpoint_config = {}
-for name, values in endpoint_parser.items():
-    endpoint_config.update({ \
-        name: { \
-			'max_pages': int(values.get('max_pages')),
-            'normal': [int(i) for i in values.get('normal').split(',')], 
-            'color': [int(i) for i in values.get('color').split(',')] 
-        } 
-    })
 
 
 def calculate_price(config, printer):

@@ -2,11 +2,15 @@
 
 # [Python native modules]
 import configparser
+import json
 # [Third-party modules]
 
-
+class CONSTS:
+    ENDPOINT_CONFIG = 'endpoint.config'
+    SERVER_CONFIG = 'server.config'
+    
 _parser = configparser.ConfigParser()
-_parser.read('server.config')
+_parser.read(CONSTS.SERVER_CONFIG)
 
 
 # server config
@@ -26,3 +30,10 @@ class DatabaseConfig:
     host = _parser['Database'].get('host', '')
     password = _parser['Database'].get('password', '')
     port = _parser['Database'].get('port', '')
+
+endpoint_config = {}
+with open(CONSTS.ENDPOINT_CONFIG, 'r') as file_reader:
+    endpoint_config = json.loads(file_reader.read())
+    file_reader.close()
+    
+
