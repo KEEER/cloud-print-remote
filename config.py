@@ -4,6 +4,7 @@
 import configparser
 import json
 # [Third-party modules]
+import rsa
 
 class CONSTS:
     ENDPOINT_CONFIG = 'endpoint.config'
@@ -36,4 +37,15 @@ with open(CONSTS.ENDPOINT_CONFIG, 'r') as file_reader:
     endpoint_config = json.loads(file_reader.read())
     file_reader.close()
     
+# we load the keys here from a pem file
+_keydata = None
+with open('remote_key.pem','rb') as fr:
+    _keydata = fr.read()
+    fr.close()
+remote_private_key = rsa.PrivateKey.load_pkcs1(_keydata)
 
+_keydata = None
+with open('endpoint_key.pem','rb') as fr:
+    _keydata = fr.read()
+    fr.close()
+endpoint_public_key = rsa.PublicKey.load_pkcs1(_keydata)
