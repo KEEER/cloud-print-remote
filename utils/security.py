@@ -36,4 +36,10 @@ def secured_sign(value):
     """
     return rsa.sign(bytes(value+ServerConfig.cp_secret_key, encoding = 'utf8'), remote_private_key, 'SHA-256').hex()
 
-
+def verify(value, sign):
+    try:
+        rsa.verify(bytes(value, encoding='utf8'), bytes.fromhex(sign), endpoint_public_key)
+    except rsa.VerificationError:
+       logger.debug('Invalid sign captured.') 
+       return False
+    return True

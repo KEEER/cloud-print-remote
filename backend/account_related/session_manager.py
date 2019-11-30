@@ -1,5 +1,5 @@
 # [In-project modules]
-from utils.kas_info_manager import get_kiuid_by_token, token_is_valid
+from utils.kas_manager import get_kiuid_by_token, token_is_valid
 from utils.database_operations import connect_to_database
 # [Python native modules]
 import logging
@@ -9,11 +9,38 @@ import random
 logger = logging.getLogger(__name__)
 class KiuidInfoError(Exception):
     pass
+class ConstructSessionError(Exception):
+    pass
 class Session:
-    def __init__(self, token):
-        self._kiuid = get_kiuid_by_token(token)
-        if self._kiuid == None:
-            raise KiuidInfoError('Invalid token!')
+    def __init__(self, token = None, kiuid = None):
+        """
+        Session
+        ===
+        This class supports two ways of construction:
+
+        ### One is:
+
+        ```python
+        session = Session(token = '...')
+        ```
+        This uses kas-account-token to construct.
+
+        ### The other is:
+        
+        ```python
+        session = Session(kiuid = '...')
+        ```
+        This uses kiuid directly to construct
+
+        """
+        if token != None and kiuid == None:
+            self._kiuid = get_kiuid_by_token(token)
+            if self._kiuid == None:
+                raise KiuidInfoError('Invalid token!')
+        elif kiuid != None:
+            self._kiuid = kiuid
+        else:
+            raise ConstructSessionError('Invalid kiuid!')
         self._jobs = []
         self._load_jobs_from_database()
         self.save()
@@ -58,23 +85,27 @@ class Session:
         # update code into database 
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
-                cursor.execute('INSERT INTO print_codes VALUES (%s)', (code, ))
+                cursor.execute('INSERT INTO print_codes VALUES (%s, %s);', (code, self._kiuid))
 
         self._jobs.append(code)
         self.job_number += 1
         self.save()
         return code
+        
+    def get_kiuid(self):
+        return self._kiuid
+
     def save(self):
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT kiuid FROM cp_sessions WHERE kiuid = %s', (self._kiuid, ))
+                cursor.execute('SELECT kiuid FROM cp_sessions WHERE kiuid = %s;', (self._kiuid, ))
                 if cursor.fetchone() == None:
                     # no such session yet
-                    cursor.execute('INSERT INTO cp_sessions(kiuid, jobs) VALUES (%s, %s)', (self._kiuid, self._jobs))
+                    cursor.execute('INSERT INTO cp_sessions(kiuid, jobs) VALUES (%s, %s);', (self._kiuid, self._jobs))
     def _load_jobs_from_database(self):
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT jobs FROM cp_sessions WHERE kiuid = %s', (self._kiuid, ))
+                cursor.execute('SELECT jobs FROM cp_sessions WHERE kiuid = %s;', (self._kiuid, ))
                 result = cursor.fetchone()
                 if result != None:
                     # create a copy of the list
@@ -83,12 +114,21 @@ class Session:
         self.save()
 _sessions = {}
 
+def get_session_by_code(code):
+    with connect_to_database() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT kiuid from print_codes WHERE code = %s;', (code, ))
+            result = cursor.fetchone()
+            if result == None:
+                return None
+            result = result[0]
+            return Session(result)
 
 def get_session_by_token(token):
     global _sessions
     if not token in _sessions:
         if token_is_valid(token):
-            new_session = Session(token)
+            new_session = Session(token = token)
             _sessions.update({token: new_session})
             return new_session
     else:

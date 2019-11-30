@@ -1,7 +1,8 @@
 from utils.user_status_detection import login_required
-from backend.account_related.session_manager import get_session_by_token
-from utils.security import secured_sign
+from backend.account_related.session_manager import get_session_by_code
+from utils.security import secured_sign, verify
 from backend.independent.price_calculation import calculate_price
+from utils.kas_manager import pay
 # [Python native modules]
 import logging
 # [Third-party modules]
@@ -11,8 +12,25 @@ logger = logging.getLogger(__name__)
 class CONSTS:
     class ROUTES:
         PRINT = '/_api/print'
+    INVALID_FORM = ('Invalid form', 400)
 printer_related_blueprint = Blueprint('printer_related_blueprint', __name__)
 
 @printer_related_blueprint.route(CONSTS.ROUTES, methods = ['GET'])
 def process_print():
-    configs
+    code = request.args.get('code', '')
+    printer_id = request.args.get('id', '')
+    config = request.args.get('configs', '')
+    sign = request.args.get('sign', '')
+    if config == '' or sign == '' or code == '' or printer_id == '':
+        return CONSTS.INVALID_FORM
+    if not verify(code + config, sign):
+        return 'Wrong Signature', 401
+    session = get_session_by_code(code)
+    # TODO: calculate price.
+    price = calculate_price(config, printer_id)
+    if price < 0:
+        return CONSTS.INVALID_FORM
+    kiuid = session.get_kiuid()
+    payment_result = pay(kiuid, price)
+    # TODO: add honesty records
+    session.remove_job(code)
