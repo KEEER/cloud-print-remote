@@ -78,9 +78,9 @@ class Session:
         The final print code will be returned in the type of python string.
         """
         # generate four number in the format of string
-        code = ''.join([chr(ord('0')+random.randint(0,9)) for _ in range(4)])
+        code = ''.join([str(random.randint(0,9)) for _ in range(4)])
         while not self._code_is_valid(code):
-            code = ''.join([chr(ord('0')+random.randint(0,9)) for _ in range(4)])
+            code = ''.join([str(random.randint(0,9)) for _ in range(4)])
 
         # update code into database 
         with connect_to_database() as connection:

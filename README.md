@@ -4,12 +4,19 @@ Cloud Print Remote
   
 分工
 ---
-- account-related
-  - [ ] Login
-  - [ ] RequestJobCodes
-  - [ ] RequestJobTOken
+- account_related
+  - [x] Request Job Codes (Egamad)
+  - [x] Request Job Token (Queue)
+  - [ ] Delete Job Token (Queue)
+  - [x] Print (Queue)
+  - [ ] Login (Andy)
 - independent
-- printer-related
+  - [x] Calculate Price (Egamad)
+- printer_related
+  - [ ] Request Printer IPs (Welen)
+  - [ ] Update Printer IP (Welen)
+  - [ ] Status Report (Andy)
+
 
 APIs
 ---
