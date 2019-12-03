@@ -73,16 +73,17 @@ class Session:
                 if cursor.fetchone() != None:
                     is_valid = False
         return is_valid
-
+    def _generate_random_codes(self, length = 4):
+        return ''.join([str(random.randint(0,9)) for _ in range(length)])
     def add_job(self):
         """
         This will generate a print task and updating it to the database.
         The final print code will be returned in the type of python string.
         """
         # generate four number in the format of string
-        code = ''.join([str(random.randint(0,9)) for _ in range(4)])
+        code = self._generate_random_codes()
         while not self._code_is_valid(code):
-            code = ''.join([str(random.randint(0,9)) for _ in range(4)])
+            code = self._generate_random_codes()
 
         # update code into database 
         with connect_to_database() as connection:
