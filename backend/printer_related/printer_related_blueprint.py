@@ -26,11 +26,23 @@ def process_print():
     if not verify(code + config, sign):
         return 'Wrong Signature', 401
     session = get_session_by_code(code)
-    # TODO: calculate price.
+
+    pay_result = pay(session.get_kiuid(), session.get_debt())
+    if pay_result[0]:
+        # successful
+        session.remove_all_debt()
+    else:
+        # TODO: maybe add a record
+        return 'You have debt to pay; access denied.', 401
+
     price = calculate_price(config, printer_id)
     if price < 0:
         return CONSTS.INVALID_FORM
     kiuid = session.get_kiuid()
     payment_result = pay(kiuid, price)
-    # TODO: add honesty records
+    
+    if not payment_result[0]:
+        logger.info('Payment failed: %s'%payment_result[1])
+        session.add_debt(price)
+
     session.remove_job(code)

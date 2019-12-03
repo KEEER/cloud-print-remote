@@ -1,6 +1,7 @@
 # [In-project modules]
 from utils.user_status_detection import login_required
 from backend.account_related.session_manager import get_session_by_token, get_session_by_code
+from utils.kas_manager import pay
 from utils.security import secured_sign, verify
 # [Python native modules]
 import logging
@@ -24,6 +25,7 @@ class CONSTS:
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
 logger = logging.getLogger(__name__)
 
+
 @account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_TOKEN, methods = ['GET'])
 @login_required
 def process_request_job_token():
@@ -32,6 +34,18 @@ def process_request_job_token():
     code = request.args.get('code', '')
 
     session = get_session_by_token(token)
+    debt = session.get_debt()
+    if debt > 0:
+        # there's debt
+        # try to pay the debt
+        pay_result = pay(session.get_kiuid(), debt)
+        if pay_result[0]:
+            # successful
+            session.remove_all_debt()
+        else:
+            # TODO: maybe add a record
+            return 'You have debt to pay; access denied.', 401
+        # maybe we need to make a debt page.
     if code == '':
         # new task mode
         if session.job_number < CONSTS.JOB_NUMBER_LIMIT:

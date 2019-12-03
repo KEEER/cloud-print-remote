@@ -42,6 +42,6 @@ uitests/out/**
 
 **/**.log
 *.log
-**/**.pem
 server.config
 endpoint.config
+**.pem

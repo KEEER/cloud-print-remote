@@ -42,7 +42,8 @@ class Session:
         else:
             raise ConstructSessionError('Invalid kiuid!')
         self._jobs = []
-        self._load_jobs_from_database()
+        self._debt = 0
+        self._load_from_database()
         self.save()
         self.job_number = len(self._jobs)
         
@@ -62,6 +63,7 @@ class Session:
             self._jobs.remove(code)
             self.job_number -= 1
             self.save()
+
     def _code_is_valid(self, code):
         is_valid = True
 
@@ -95,21 +97,36 @@ class Session:
     def get_kiuid(self):
         return self._kiuid
 
+    def add_debt(self, value):
+        self._debt += value
+        self.save()
+    def get_debt(self):
+        return self._debt
+
+    def remove_all_debt(self):
+        self._debt = 0
+        self.save()
+
     def save(self):
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT kiuid FROM cp_sessions WHERE kiuid = %s;', (self._kiuid, ))
                 if cursor.fetchone() == None:
                     # no such session yet
-                    cursor.execute('INSERT INTO cp_sessions(kiuid, jobs) VALUES (%s, %s);', (self._kiuid, self._jobs))
-    def _load_jobs_from_database(self):
+                    cursor.execute('INSERT INTO cp_sessions(kiuid, jobs, debt) VALUES (%s, %s, %s);', (self._kiuid, self._jobs, self._debt))
+                else:
+                    cursor.execute('UPDATE cp_sessions SET jobs = %s, debt = %s WHERE kiuid = %s;', (self._jobs, self._debt, self._kiuid))
+    def _load_from_database(self):
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT jobs FROM cp_sessions WHERE kiuid = %s;', (self._kiuid, ))
+                cursor.execute('SELECT jobs,debt FROM cp_sessions WHERE kiuid = %s;', (self._kiuid, ))
                 result = cursor.fetchone()
                 if result != None:
+                    logger.debug('Load: '+str(result))
                     # create a copy of the list
                     self._jobs = [i for i in result[0]] 
+                    self._debt = result[1]
+
     def __del__(self):
         self.save()
 _sessions = {}
