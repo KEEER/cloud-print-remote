@@ -12,7 +12,9 @@ class CONSTS:
     STATUS = 'status'
     RESULT = 'result'
     OK = 0
-
+    REQUEST_HEADER = {
+        'User-agent': 'Mozilla/5.0'
+    }
 class FailedToGetKiuidError(Exception):
     pass
 
@@ -26,9 +28,7 @@ def get_kiuid_by_token(token):
     response = requests.post(
         CONSTS.REQUEST_KIUID, 
         data = form,
-        headers = {
-            'User-agent': 'Mozilla/5.0'
-        }
+        headers = CONSTS.REQUEST_HEADER
     )
     if response.status_code != 200:
         logger.exception('Cannot get kiuid, parameters: %s'%str(form))
@@ -48,9 +48,7 @@ def token_is_valid(token):
     response = requests.post(
         CONSTS.REQUEST_KIUID, 
         data = form,
-        headers = {
-            'User-agent': 'Mozilla/5.0'
-        }
+        headers = CONSTS.REQUEST_HEADER
     )
     if response.status_code != 200:
         logger.exception('Cannot examine token, parameters: %s'%str(form))
@@ -70,9 +68,7 @@ def pay(kiuid, amount):
             'amount': amount,
             'sign': kas_sign(kiuid)
         },
-        headers = {
-            'User-agent': 'Mozilla/5.0'
-        }
+        headers = CONSTS.REQUEST_HEADER
     )
     if response.status_code != 200:
         raise Exception(response.text,response.status_code)

@@ -7,7 +7,7 @@ Cloud Print Remote
 - account_related
   - [x] Request Job Codes (Egamad)
   - [x] Request Job Token (Queue)
-  - [ ] Delete Job Token (Queue)
+  - [x] Delete Job Token (Queue)
   - [x] Print (Queue)
   - [ ] Login (Andy)
 - independent

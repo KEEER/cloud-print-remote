@@ -1,5 +1,5 @@
 # [In-project modules]
-from utils.kas_info_manager import token_is_valid
+from utils.kas_manager import token_is_valid
 from config import ServerConfig
 # [Python native modules]
 
