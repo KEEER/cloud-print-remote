@@ -5,6 +5,7 @@ from backend.independent.price_calculation import calculate_price
 from utils.kas_manager import pay
 # [Python native modules]
 import logging
+import json
 # [Third-party modules]
 from flask import Blueprint, request
 
@@ -27,6 +28,7 @@ def process_print():
         return CONSTS.INVALID_FORM
     if not verify(code + config, sign):
         return 'Wrong Signature', 401
+    config = json.loads(config)
     session = get_session_by_code(code)
 
     pay_result = pay(session.get_kiuid(), session.get_debt())
