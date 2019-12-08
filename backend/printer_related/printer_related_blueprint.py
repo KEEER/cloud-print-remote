@@ -18,7 +18,7 @@ class CONSTS:
     INVALID_FORM = ('Invalid form', 400)
 printer_related_blueprint = Blueprint('printer_related_blueprint', __name__)
 
-@printer_related_blueprint.route(CONSTS.ROUTES, methods = ['GET'])
+@printer_related_blueprint.route(CONSTS.ROUTES.PRINT, methods = ['GET'])
 def process_print():
     code = request.args.get('code', '')
     printer_id = request.args.get('id', '')
@@ -51,6 +51,7 @@ def process_print():
 
     session.remove_job(code)
 
+"""
 @printer_related_blueprint.route(CONSTS.ROUTES.REQUEST_GET_JOB_TOKEN,methods=['GET'])
 @login_required
 def RequestPrinterIPs():
@@ -85,5 +86,6 @@ def UpdatePrinterIP():
     try:
         with open('./runtime_ipdb','w') as rdb:
             for idc,ipc in current_db:
-                print(idc,ipc,sep=' ')
+                print(idc, ipc,sep=' ')
     return None
+"""

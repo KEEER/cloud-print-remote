@@ -39,4 +39,5 @@ def login_required(processing_function):
                 response.set_cookie('kas-account-token', '', max_age = 0)
             return response
         return processing_function(*args, **kwargs)
+    wrapper.__name__ = processing_function.__name__
     return wrapper

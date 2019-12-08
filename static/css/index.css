@@ -1,0 +1,53 @@
+html, body {
+    margin: 0;
+    --mdc-theme-primary: #f57c00;
+    --mdc-theme-secondary: #5d4037;
+}
+.app-bar-button {
+    border-color: white;
+    color: white;
+}
+.container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+.mdc-top-app-bar {
+    position: fixed;
+    top: 0;
+}
+.introduction-panel {
+    width: 100%;
+    height: 320px;
+    background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR28PPQt0zmiiFI7-JuZNBFThRKMwrWmeCvI3Qk2gHyrP2NQ4cQ&s');
+    background-size: cover;
+    text-align: center;
+    color: white;
+}
+.introduction-panel__content::before, .introduction-panel__content::after{
+    content: ' ';
+    flex: auto;
+}
+.feature-container {
+    text-align: left;
+}
+.feature-panel {
+    display: flex;
+    flex-direction: row;
+    padding: 8px;
+}
+.feature-panel__logo {
+    border-radius: 4px;
+    width: 120px;
+    height: 120px;
+    margin-right: 32px;
+}
+.feature-panel__content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+.feature-panel__title {
+    font-size: xx-large;
+}
