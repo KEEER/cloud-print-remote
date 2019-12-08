@@ -77,3 +77,6 @@ def pay(kiuid, amount):
     if response['status'] == 0:
         return True, '成功'
     return False, response['message']
+
+def login():
+    return 'https://github.com' # TODO to impl utils.kas_manager.login() 
