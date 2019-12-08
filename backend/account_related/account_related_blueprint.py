@@ -1,7 +1,7 @@
 # [In-project modules]
 from utils.user_status_detection import login_required
 from backend.account_related.session_manager import get_session_by_token, get_session_by_code
-from utils.kas_manager import pay
+from utils.kas_manager import pay, login
 from utils.security import secured_sign, verify
 # [Python native modules]
 import logging
@@ -9,7 +9,7 @@ import json
 import random
 import time
 # [Third-party modules]
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, redirect
 
 class CONSTS:
     TOKEN = 'kas-account-token'
@@ -20,11 +20,15 @@ class CONSTS:
         REQUEST_JOB_TOKEN = '/_api/job-token'
         REQUEST_JOB_CODES = '/_api/codes'
         DELETE_JOB_TOKEN = '/_api/delete-job-token'
+        LOGIN = '/'
         
 
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
 logger = logging.getLogger(__name__)
 
+@account_related_blueprint.route(CONSTS.ROUTES.LOGIN, methods = ['GET'])
+def index():
+    return redirect(login())
 
 @account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_TOKEN, methods = ['GET'])
 @login_required
