@@ -6,6 +6,8 @@ from utils.kas_manager import pay
 # [Python native modules]
 import logging
 import json
+from string import Template
+import time
 # [Third-party modules]
 from flask import Blueprint, request
 
@@ -15,6 +17,7 @@ class CONSTS:
         PRINT = '/_api/print'
         REQUEST_GET_JOB_TOKEN='/_api/printer-ips'
         REQUEST_SET_JOB_TOKEN='/_api/printer-ip'
+        STATUS_REPORT='/_api/status-report'
     INVALID_FORM = ('Invalid form', 400)
 printer_related_blueprint = Blueprint('printer_related_blueprint', __name__)
 
@@ -82,8 +85,20 @@ def UpdatePrinterIP():
     for i,each in enumerate(current_db):
         if each[0]==ida:
             current_db[i][1]=ipa
-    try:
-        with open('./runtime_ipdb','w') as rdb:
-            for idc,ipc in current_db:
-                print(idc,ipc,sep=' ')
-    return None
+    #try:
+    #    with open('./runtime_ipdb','w') as rdb:
+    #        for idc,ipc in current_db:
+    #            print(idc,ipc,sep=' ')
+    #return None
+
+@printer_related_blueprint.route(CONSTS.ROUTES.STATUS_REPORT,methods=['POST'])
+@login_required
+def StatusReport():
+    response = request.args.get('response', '')
+    response = json.loads(response)
+    
+    toReadableMessage = Template('报告时间：${time} 打印机${name} 位于{geolocation}出现问题：\n{message}')
+
+    nowtime = time.strftime('%Y.%m.%d',time.localtime(time.time()))
+    readableMessage = toReadableMessage.safe_substitute(time = nowtime, name = response['name'], geolocation = response['geolocation'], message = response['message'])
+    # TODO: Call maintainer
