@@ -20,5 +20,5 @@ def process_advanced_tips():
     return render_template('advanced_tips.html')
 
 @frontend_blueprint.route(CONSTS.ROUTES.WELCOME, methods = ['GET'])
-def process_advanced_tips():
+def process_welcome():
     return render_template('welcome.html')
