@@ -1,18 +1,5 @@
-html, body {
-    margin: 0;
-    --mdc-theme-primary: #f57c00;
-    --mdc-theme-secondary: #5d4037;
-}
-.app-bar-button {
-    border-color: white;
-    color: white;
-}
-.container {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-}
+
+
 .mdc-top-app-bar {
     position: fixed;
     top: 0;
@@ -36,6 +23,8 @@ html, body {
     display: flex;
     flex-direction: row;
     padding: 8px;
+    border-top: 1px solid #bdbdbd;
+    margin-top: 40px;
 }
 .feature-panel__logo {
     border-radius: 4px;

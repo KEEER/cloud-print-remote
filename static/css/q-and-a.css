@@ -1,0 +1,15 @@
+.question-and-answer-container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: 16px;
+}
+.question-and-answer-panel {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 16px;
+}
+.question-and-answer-panel__question {
+    font-size: xx-large;
+}

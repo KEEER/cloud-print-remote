@@ -108,8 +108,3 @@ def process_delete_job_token():
             'status': 0,
             'message': 'code removed'
         })
-
-# Test route for UI
-@account_related_blueprint.route('/ui-test', methods = ['GET'])
-def process_test():
-    return render_template('index.html')

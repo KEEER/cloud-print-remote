@@ -5,6 +5,7 @@ from utils.logger import initialize_logging_module
 from backend.account_related.account_related_blueprint import account_related_blueprint
 from backend.independent.independent_blueprint import independent_blueprint
 from backend.printer_related.printer_related_blueprint import printer_related_blueprint
+from frontend.frontend_blueprint import frontend_blueprint
 # [Python native modules]
 import logging
 # [Third-party modules]
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     server.register_blueprint(account_related_blueprint)
     server.register_blueprint(independent_blueprint)
     server.register_blueprint(printer_related_blueprint)
+    server.register_blueprint(frontend_blueprint)
     try:
         main_logger.info('All blueprints loaded, server starts up.')
         # start server

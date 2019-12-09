@@ -1,0 +1,53 @@
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(http://cdn.bootcss.com/material-design-icons/2.1.1/iconfont/MaterialIcons-Regular.eot); /* For IE6-8 */
+    src: local('Material Icons'),
+         local('MaterialIcons-Regular'),
+         url(http://cdn.bootcss.com/material-design-icons/2.1.1/iconfont/MaterialIcons-Regular.woff2) format('woff2'),
+         url(http://cdn.bootcss.com/material-design-icons/2.1.1/iconfont/MaterialIcons-Regular.woff) format('woff'),
+         url(http://cdn.bootcss.com/material-design-icons/2.1.1/iconfont/MaterialIcons-Regular.ttf) format('truetype');
+  }
+  
+  .material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+  
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+  
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+  
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+html, body {
+    margin: 0;
+    --mdc-theme-primary: #f57c00;
+    --mdc-theme-secondary: #5d4037;
+}
+.container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+.app-bar-text {
+    border-color: white;
+    color: white;
+}

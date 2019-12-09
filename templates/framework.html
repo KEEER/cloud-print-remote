@@ -1,0 +1,35 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %} {% endblock title%}</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/card@2.3.0/dist/mdc.card.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/button@2.3.0/dist/mdc.button.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/typography@2.3.0/dist/mdc.typography.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/top-app-bar@2.3.0/dist/mdc.top-app-bar.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/elevation/dist/mdc.elevation.min.css" />
+    <link rel="stylesheet" href="/static/css/framework.css" />
+    {% block stylesheet %}
+    {% endblock stylesheet %}
+  </head>
+  <body class="mdc-typography">
+    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4">
+      <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+          <span class="mdc-top-app-bar__title">Cloud Print</span>
+        </section>
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+          {% block header %}
+          {% endblock header %}
+        </section>
+      </div>
+    </header>
+    <div class="container mdc-top-app-bar--fixed-adjust">
+    {% block content %}
+
+    {% endblock content %}  
+    </div>
+  </body>
+</html>

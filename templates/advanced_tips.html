@@ -1,0 +1,35 @@
+{% extends 'framework.html' %}
+
+{% block title %}Cloud Print | 高级技巧{% endblock title %}
+{% block stylesheet %}
+  <link rel="stylesheet" href="/static/css/advanced_tips.css" />
+{% endblock stylesheet %}
+
+{% block header%}
+  <a class="mdc-button" href="/welcome">
+    <i class="material-icons app-bar-text">home</i>
+  </a>
+{% endblock header%}
+{% block content %}
+  <div class="title">
+  <h2 class="mdc-typography--headline2">高级使用技巧</h2>
+  <h5 class="mdc-typography--headline5">掌握高级技巧，体会 Cloud Print 的便利</h5>
+  </div>
+  <div class="tip-container">
+
+    <div class="mdc-card tip-card">
+      <div class="mdc-card__media mdc-card__media--16-9 tip-card__media"></div>
+      <div class="tip-card__body">
+        <div class="tip-card__primary">
+          <h2 class="tip-card__title mdc-typography mdc-typography--headline6">拖拽上传</h2>
+        </div>
+        <div class="tip-card__secondary mdc-typography mdc-typography--body2">
+          您可以从微信向上面拖拽上传文件
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+{% endblock content %}

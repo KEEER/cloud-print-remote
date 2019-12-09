@@ -1,0 +1,31 @@
+.tip-container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: 16px;
+}
+.title {
+    margin-left: 32px;
+    margin-right: 32px;
+}
+.tip-panel {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 16px;
+    border-radius: 24px;
+}
+.tip-panel__title{
+    font-size: xx-large;
+}
+.tip-card {
+    min-width: 300px;
+    max-width: 640px;
+    text-align: left;
+}
+.tip-card__media {
+    background-image: url('https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1708456121,4044353785&fm=26&gp=0.jpg');
+}
+.tip-card__body {
+    padding: 16px;
+}

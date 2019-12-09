@@ -1,0 +1,26 @@
+{% extends 'framework.html' %}
+
+{% block stylesheet %}
+  <link rel="stylesheet" href="/static/css/q-and-a.css" />
+{% endblock stylesheet %}
+
+{% block header%}
+  <a class="mdc-button" href="/welcome">
+    <i class="material-icons app-bar-text">home</i>
+  </a>
+{% endblock header%}
+{% block content %}
+  <h2 class="mdc-typography--headline2">常见问题问答</h2>
+  <div class="question-and-answer-container">
+    <div class="mdc-card mdc-card--outlined question-and-answer-panel">
+      <div class="question-and-answer-panel__question">为何不继续使用微信?</div>
+      <div class="question-and-answer-panel__answer">
+        <p>1、之前使用微信的运作模式违反了
+          <a href="https://weixin.qq.com/agreement?lang=zh_CN" target="_blank">《腾讯微信软件许可及服务协议》</a>
+          中 8.2.1.4 所规定的条款，属于违法行为。</p>
+        <p>2、鉴于微信对网页版的限制，我们无法保证服务的稳定性。</p>
+        <p>3、微信机器人使用交互不够便利。</p>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
