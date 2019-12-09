@@ -5,6 +5,7 @@ debug = True
 maximum_threads = 128
 kas_secret_key = ******
 cp_secret_key = ******
+public_address = cp.keeer.net
 [Database]
 host = 127.0.0.1
 port = 5432

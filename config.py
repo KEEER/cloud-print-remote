@@ -23,7 +23,7 @@ class ServerConfig:
     maximum_threads = int(_parser['Server'].get('maximum_threads','4'))
     kas_secret_key = _parser['Server'].get('kas_secret_key', '')
     cp_secret_key = _parser['Server'].get('cp_secret_key', '')
-
+    public_address = _parser['Server'].get('public_address', '127.0.0.1')
 class DatabaseConfig:
     global _parser
     database = _parser['Database'].get('database', '')
@@ -31,6 +31,7 @@ class DatabaseConfig:
     host = _parser['Database'].get('host', '')
     password = _parser['Database'].get('password', '')
     port = _parser['Database'].get('port', '')
+    
 
 endpoint_config = {}
 with open(CONSTS.ENDPOINT_CONFIG, 'r') as file_reader:

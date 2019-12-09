@@ -1,5 +1,6 @@
 # [In-project modules]
 from utils.security import kas_sign
+from config import ServerConfig
 # [Python native modules]
 import requests
 import logging
@@ -15,6 +16,10 @@ class CONSTS:
     REQUEST_HEADER = {
         'User-agent': 'Mozilla/5.0'
     }
+    NAME = 'Cloud Print'
+    # These two are just demo
+    LOGO_URL = 'https://i.dlpng.com/static/png/6209818-cartoon-of-a-printer-ink-illustrations-royalty-free-vector-cartoon-printer-612_612_preview.png'
+    BACKGROUND_URL = 'http://7-themes.com/data_images/out/34/6885205-orange-light.jpg'
 class FailedToGetKiuidError(Exception):
     pass
 
@@ -78,5 +83,11 @@ def pay(kiuid, amount):
         return True, '成功'
     return False, response['message']
 
+
 def login():
-    return 'https://github.com' # TODO to impl utils.kas_manager.login() 
+    return 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s' % (
+        CONSTS.NAME,
+        CONSTS.LOGO_URL,
+        ServerConfig.public_address,
+        CONSTS.BACKGROUND_URL
+    )

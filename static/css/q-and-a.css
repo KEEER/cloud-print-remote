@@ -9,6 +9,9 @@
     flex-direction: column;
     text-align: left;
     padding: 16px;
+    max-width: 640px;
+    min-width: 300px;
+    margin-top: 16px;
 }
 .question-and-answer-panel__question {
     font-size: xx-large;
