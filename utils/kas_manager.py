@@ -16,10 +16,11 @@ class CONSTS:
     REQUEST_HEADER = {
         'User-agent': 'Mozilla/5.0'
     }
-    NAME = 'Cloud Print'
+    NAME = '登录 Cloud Print'
     # These two are just demo
-    LOGO_URL = 'https://i.dlpng.com/static/png/6209818-cartoon-of-a-printer-ink-illustrations-royalty-free-vector-cartoon-printer-612_612_preview.png'
-    BACKGROUND_URL = 'http://7-themes.com/data_images/out/34/6885205-orange-light.jpg'
+    LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Overwatch_circle_logo.svg/600px-Overwatch_circle_logo.svg.png'
+    BACKGROUND_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdREANHAoSAAozc-OTddNReGMM82DBhCmhWXFuKzTREhFw_7MO'
+    THEME = 'f57c00'
 class FailedToGetKiuidError(Exception):
     pass
 
@@ -85,9 +86,10 @@ def pay(kiuid, amount):
 
 
 def login():
-    return 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s' % (
+    return 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s&theme=%s' % (
         CONSTS.NAME,
         CONSTS.LOGO_URL,
         ServerConfig.public_address,
-        CONSTS.BACKGROUND_URL
+        CONSTS.BACKGROUND_URL,
+        CONSTS.THEME
     )

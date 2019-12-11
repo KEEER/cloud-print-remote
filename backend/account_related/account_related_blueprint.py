@@ -20,7 +20,8 @@ class CONSTS:
         REQUEST_JOB_TOKEN = '/_api/job-token'
         REQUEST_JOB_CODES = '/_api/codes'
         DELETE_JOB_TOKEN = '/_api/delete-job-token'
-        LOGIN = '/'
+        LOGIN = '/login'
+        INDEX = '/'
         
 
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
@@ -29,6 +30,10 @@ logger = logging.getLogger(__name__)
 @account_related_blueprint.route(CONSTS.ROUTES.LOGIN, methods = ['GET'])
 def index():
     return redirect(login())
+    
+@account_related_blueprint.route(CONSTS.ROUTES.INDEX, methods = ['GET', 'POST'])
+def process_index():
+    return render_template('index.html')
 
 @account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_TOKEN, methods = ['GET'])
 @login_required

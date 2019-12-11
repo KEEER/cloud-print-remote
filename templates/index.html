@@ -1,0 +1,24 @@
+{% extends 'framework.html' %}
+
+{% block title %} 上传文件 | Cloud Print {% endblock title%}
+
+{% block stylesheet%}
+  <link rel="stylesheet" href="/static/css/index.css" />
+{% endblock stylesheet %}
+
+{% block content %}
+  <div class="file-drop-container">
+    <div class="file-drop-zone">
+      <img class="printer-logo" src="https://squoosh.app/logo.af355.svg" />
+      <h5 class="mdc-typography--headline5">
+        拖放或
+        <button class="mdc-button" onclick="document.getElementById('file').click()">
+          <span class="mdc-button__label">选择</span>
+        </button>
+        一个文件
+      </h5>
+      
+    </div>
+  </div>
+  <input id="file" type="file" style="display: none;"/>
+{% endblock content %}

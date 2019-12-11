@@ -1,6 +1,6 @@
 {% extends 'framework.html' %}
 
-{% block title %}KEEER | Cloud Print{% endblock title %}
+{% block title %}KEEER Cloud Print{% endblock title %}
     
 {% block stylesheet %}
   <link rel="stylesheet" href="/static/css/welcome.css" />
@@ -13,23 +13,24 @@
        <p class="mdc-typography--headline5">在云端 更好的打印</p>
        <p>
         <a class="mdc-button mdc-button--outlined" href="{{ LOGIN_URL }}">
-          <i class="material-icons">arrow_forward</i>
-          <span>开始使用</span>  
+          <span class="mdc-button__ripple"></span>
+          <i class="material-icons mdc-button__icon">arrow_forward</i>
+          <span class="mdc-button__label">开始使用</span>  
         </a>
       </p>
       <p>
-        <a class="mdc-button" href="/advanced_tips">
-          <i class="material-icons">arrow_forward</i>
-          <span>高级使用技巧</span>
+        <a class="mdc-button" href="/advanced-tips">
+          <span class="mdc-button__ripple"></span>
+          <span class="mdc-button__label">高级使用技巧</span>
         </a>
       </p>
     </div>
   </div>
 
   <h2 class="mdc-typography--headline2">关于Cloud Print</h2>
-  <a class="mdc-button" href="/Q&A">
-    <i class="material-icons">info_outlined</i>
-    <span>常见问题及解答</span> 
+  <a class="mdc-button" href="/Q-A">
+    <i class="material-icons mdc-button__icon">info_outlined</i>
+    <span class="mdc-button__label">常见问题及解答</span> 
     </a>
   <div class="feature-container">
     <div class="feature-panel">
@@ -52,11 +53,12 @@
       <img src="https://www.openaccessgovernment.org/wp-content/uploads/2019/07/dreamstime_m_137074967.jpg" class="feature-panel__logo" />
       <div class="feature-panel__content">
         <div class="feature-panel__title">我们保障您的信息安全</div>
-        <p>您的隐私将被安全地存储。我们承诺不会浏览您上传的文档。</p>
-        <a class="mdc-button mdc-button--outlined">
-          <span>了解更多</span>
-          <i class="material-icons">arrow_forward</i>
-        </a>
+        <p>您的隐私将被安全地存储。我们承诺不会浏览您上传的文档。
+          <a class="mdc-button">
+            <i class="material-icons mdc-button__icon">arrow_forward</i>
+            <span class="mdc-button__label">了解更多</span>
+          </a>
+        </p>
       </div>
     </div>
         

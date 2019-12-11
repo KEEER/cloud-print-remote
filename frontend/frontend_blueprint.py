@@ -8,8 +8,8 @@ from flask import Blueprint, request, render_template, redirect
 frontend_blueprint = Blueprint('frontend_blueprint', __name__)
 class CONSTS:
     class ROUTES:
-        Q_AND_A = '/Q&A'
-        ADVANCED_TIPS = '/advanced_tips'
+        Q_AND_A = '/Q-A'
+        ADVANCED_TIPS = '/advanced-tips'
         WELCOME = '/welcome'
 @frontend_blueprint.route(CONSTS.ROUTES.Q_AND_A, methods = ['GET'])
 def process_question():

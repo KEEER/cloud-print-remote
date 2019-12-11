@@ -18,13 +18,13 @@
 }
 .feature-container {
     text-align: left;
+    margin-top: 32px;
 }
 .feature-panel {
     display: flex;
     flex-direction: row;
-    padding: 8px;
+    padding: 16px;
     border-top: 1px solid #bdbdbd;
-    margin-top: 40px;
 }
 .feature-panel__logo {
     border-radius: 4px;
@@ -36,6 +36,7 @@
     display: flex;
     flex-direction: column;
     text-align: left;
+    justify-content: center;
 }
 .feature-panel__title {
     font-size: xx-large;

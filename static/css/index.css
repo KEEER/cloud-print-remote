@@ -1,0 +1,18 @@
+body {
+    flex-direction: column;
+}
+.file-drop-container {
+    display: block;
+    margin: 16px;
+}
+.file-drop-zone {
+    border: 4px dashed var(--mdc-theme-primary);
+    border-radius: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    padding: 64px;
+}
+.printer-logo {
+    border-radius: 50%;
+    max-width: 300px;
+}
