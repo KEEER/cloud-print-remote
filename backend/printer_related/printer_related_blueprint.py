@@ -34,25 +34,11 @@ def process_print():
     config = json.loads(config)
     session = get_session_by_code(code)
 
-    pay_result = pay(session.get_kiuid(), session.get_debt())
-    if pay_result[0]:
-        # successful
-        session.remove_all_debt()
-    else:
-        # TODO: maybe add a record
-        return 'You have debt to pay; access denied.', 401
+    kiuid = ''
+    pay_result = pay(kiuid, 0)
 
-    price = calculate_price(config, printer_id)
-    if price < 0:
-        return CONSTS.INVALID_FORM
-    kiuid = session.get_kiuid()
-    payment_result = pay(kiuid, price)
-    
-    if not payment_result[0]:
-        logger.info('Payment failed: %s'%payment_result[1])
-        session.add_debt(price)
-
-    session.remove_job(code)
+    payment_result = pay(kiuid, 0)
+    return str(payment_result)
 
 """
 @printer_related_blueprint.route(CONSTS.ROUTES.REQUEST_GET_JOB_TOKEN,methods=['GET'])

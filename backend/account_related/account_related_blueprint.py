@@ -36,10 +36,8 @@ def process_index():
     return render_template('index.html')
 
 @account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_TOKEN, methods = ['GET'])
-@login_required
 def process_request_job_token():
     # access the token
-    token = request.cookies.get(CONSTS.TOKEN, '')
     code = request.args.get('code', '')
 
     session = get_session_by_token(token)
