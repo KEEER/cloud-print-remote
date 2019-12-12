@@ -34,7 +34,7 @@ def process_print():
     config = json.loads(config)
     session = get_session_by_code(code)
 
-    kiuid = ''
+    kiuid = '01d0101c-0577-47f3-a9d1-89143affbea3'
     pay_result = pay(kiuid, 0)
 
     payment_result = pay(kiuid, 0)
