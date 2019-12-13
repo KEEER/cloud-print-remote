@@ -59,7 +59,7 @@ def process_request_job_token():
         # new task mode
         if session.job_number < CONSTS.JOB_NUMBER_LIMIT:
             code = session.add_job()
-            timestamp = int(time.time())
+            timestamp = str(int(time.time()))
             
             return json.dumps({
                 'code': code,
