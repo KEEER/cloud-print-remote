@@ -8,8 +8,20 @@
 
 {% block content %}
   <div class="file-drop-container">
-    <div class="file-drop-zone">
-      <img class="printer-logo" src="https://squoosh.app/logo.af355.svg" />
+    <div class="file-drop-zone" id="file-zone" accept="application/pdf">
+      <div class="printer-card">
+        <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
+        <div class="printer-card__content">
+          <h5 class="mdc-typography--headline5">ICC楼四层东侧</h5>
+          <div class="printer-card__status">
+            <span clas="mdc-typography--body1">状态： </span>
+            <div class="printer-status printer-status__unavaliable"></div>
+            <span clas="mdc-typography--body1">不可用</span>
+          </div>
+          <span clas="mdc-typography--body1">描述：这是一台打印机</span>
+        </div>
+      </div>
+
       <h5 class="mdc-typography--headline5">
         拖放或
         <button class="mdc-button" onclick="document.getElementById('file').click()">
@@ -17,8 +29,57 @@
         </button>
         一个文件
       </h5>
-      
+        <h5 class="mdc-typography--headline5 file-drop__helper" id="upload-info">☺️ 拖拽文件到这里</h5>
     </div>
   </div>
-  <input id="file" type="file" style="display: none;"/>
+  <input id="file" type="file" accept="application/pdf" style="display: none;"/>
 {% endblock content %}
+{% block script %}
+  <script type="text/javascript">
+    const dragAndDropZone = document.getElementById('file-zone')
+    const infoBox = document.getElementById('upload-info')
+    const file = document.getElementById('file')
+    var t;
+    function setMessage(message) {
+      infoBox.style.opacity = 1;
+			  infoBox.innerText = message;
+    }
+
+    dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function(evt) {
+			  evt.preventDefault();
+			  dragAndDropZone.classList.add('file-drop-zone__focused');
+
+			  infoBox.style.opacity = 0;
+			};
+			dragAndDropZone.ondragleave = function(evt) {
+				evt.preventDefault();
+				dragAndDropZone.classList.remove('file-drop-zone__focused');
+
+        setMessage('☺️ 拖拽文件到这里');
+			}
+			dragAndDropZone.ondrop = function(evt) {
+			  dragAndDropZone.classList.remove('file-drop-zone__focused');
+			  console.log(evt.dataTransfer.files[0]);
+			  t = evt.dataTransfer.files[0];
+			  if (evt.dataTransfer.files[0].type !== 'application/pdf') {
+				  evt.preventDefault();
+				  setMessage('💀 请上传 PDF 文件');
+				  return;
+			  }
+        // TODO: real upload and request part
+        file.files = evt.dataTransfer.files
+			  setMessage('🤗 好嘞，正在上传'+evt.dataTransfer.files[0].name);
+			  evt.preventDefault();
+			};
+      file.addEventListener('change', function(e) {
+        console.log('Event change', e)
+        t = file.files[0];
+        console.log('file: ', t)
+			  if (t.type !== 'application/pdf') {
+				  setMessage('💀 请上传 PDF 文件');
+				  return;
+			  }
+        setMessage('🤗 好嘞，正在上传'+t.name);
+      })
+  </script>
+{% endblock script%}

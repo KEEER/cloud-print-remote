@@ -9,13 +9,13 @@ Cloud Print Remote
   - [x] Request Job Token (Queue)
   - [x] Delete Job Token (Queue)
   - [x] Print (Queue)
-  - [ ] Login (Andy)
+  - [x] Login (Andy)
 - independent
   - [x] Calculate Price (Egamad)
 - printer_related
-  - [ ] Request Printer IPs (Welen)
-  - [ ] Update Printer IP (Welen)
-  - [ ] Status Report (Andy)
+  - [x] Request Printer IPs (Welen)
+  - [x] Update Printer IP (Welen)
+  - [.] Status Report (Andy)
 
 
 APIs
