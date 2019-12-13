@@ -78,7 +78,6 @@ def pay(kiuid, amount):
     )
     if response.status_code != 200:
         raise Exception(response.text,response.status_code)
-        return False
     response = response.json()
     if response['status'] == 0:
         return True, '成功'
