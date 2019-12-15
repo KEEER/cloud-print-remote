@@ -140,7 +140,7 @@ def get_session_by_code(code):
             if result == None:
                 return None
             result = result[0]
-            return Session(result)
+            return Session(kiuid = result)
 
 def get_session_by_token(token):
     global _sessions

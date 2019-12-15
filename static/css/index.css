@@ -2,15 +2,16 @@ body {
     flex-direction: column;
 }
 .file-drop-container {
-    display: block;
-    margin: 16px;
+    display: flex;
+    margin: 0;
+    
 }
 .file-drop-zone {
+    width: 80vw;
     border: 1px dashed var(--mdc-theme-primary);
-    width: 60vw;
-    height: 60vh;
     border-radius: 20px;
-    padding: 64px;
+    padding: 16px;
+    margin: 8px;
     
     transition: box-shadow 0.3s ease;
 }
@@ -28,6 +29,7 @@ body {
     padding: 16px;
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 .printer-card__logo {
     border-radius: 50%;
@@ -38,7 +40,8 @@ body {
 .printer-card__content {
     display: flex;
     flex-direction: column;
-    text-align: end;
+    text-align: left;
+    justify-content: space-evenly;
 
 }
 .printer-card__status {
@@ -48,20 +51,29 @@ body {
     
 }
 .printer-status {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
     margin-right: 8px;
 }
 .printer-status__avaliable {
-    background-color: greenyellow;
+    color: greenyellow;
 }
 .printer-status__busy {
-    background-color: yellow;
+    color: yellow;
 }
 .printer-status__unavaliable {
-    background-color: red;
+    color: red;
 }
 .printer-status__fixing {
-    background-color: purple;
+    color: purple;
+}
+.mdc-typography--headline5 {
+    margin: 8px 0 0 0;
+}
+@media(max-width: 720px) {
+    .printer-card {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 }

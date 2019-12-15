@@ -45,3 +45,4 @@ uitests/out/**
 server.config
 endpoint.config
 **.pem
+**.pkl

@@ -18,7 +18,6 @@ initialize_logging_module()
 main_logger = logging.getLogger('main')
 
 
-
 if __name__ == '__main__':
     
     server = Flask(__name__)

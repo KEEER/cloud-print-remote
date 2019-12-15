@@ -22,7 +22,6 @@ def calculate_price(config, printer):
     """
     global endpoint_config
     try:
-        config = json.loads(config)
         page_count = config['page-count']
         print_type = 'colored' if config['colored'] else 'normal'
         if page_count > endpoint_config[printer]['max_pages']:

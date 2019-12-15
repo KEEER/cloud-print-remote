@@ -72,7 +72,7 @@ def pay(kiuid, amount):
         params = {
             'kiuid': kiuid,
             'amount': amount,
-            'sign': kas_sign(kiuid)
+            'sign': kas_sign(kiuid+str(amount))
         },
         headers = CONSTS.REQUEST_HEADER
     )

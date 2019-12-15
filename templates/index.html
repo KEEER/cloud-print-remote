@@ -12,10 +12,10 @@
       <div class="printer-card">
         <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
         <div class="printer-card__content">
-          <h5 class="mdc-typography--headline5">ICC楼四层东侧</h5>
+          <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;">ICC楼四层东侧</h5>
           <div class="printer-card__status">
             <span clas="mdc-typography--body1">状态： </span>
-            <div class="printer-status printer-status__unavaliable"></div>
+            <span class="printer-status printer-status__unavaliable">⬤</span>
             <span clas="mdc-typography--body1">不可用</span>
           </div>
           <span clas="mdc-typography--body1">描述：这是一台打印机</span>
@@ -24,7 +24,7 @@
 
       <h5 class="mdc-typography--headline5">
         拖放或
-        <button class="mdc-button" onclick="document.getElementById('file').click()">
+        <button class="mdc-button mdc-button--outlined" onclick="document.getElementById('file').click()">
           <span class="mdc-button__label">选择</span>
         </button>
         一个文件
