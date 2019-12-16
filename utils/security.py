@@ -25,7 +25,7 @@ def cp_sign(value):
     Signs information with the Cloud Print standard
     """
     coder = hashlib.sha256()
-    coder.update(bytes(value+ServerConfig.cp_secret_key, encoding='UTF8'))
+    coder.update(bytes(value, encoding='UTF8'))
     return coder.hexdigest()
 
 def secured_sign(value):
@@ -34,7 +34,7 @@ def secured_sign(value):
     ===
     Encrypts and signs `value` by private key according to Cloud Print standard.
     """
-    return rsa.sign(bytes(value+ServerConfig.cp_secret_key, encoding = 'utf8'), remote_private_key, 'SHA-256').hex()
+    return rsa.sign(bytes(value, encoding = 'utf8'), remote_private_key, 'SHA-256').hex()
 
 def verify(value, sign):
     try:

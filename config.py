@@ -22,7 +22,6 @@ class ServerConfig:
     port = int(_parser['Server'].get('port','5000'))
     maximum_threads = int(_parser['Server'].get('maximum_threads','4'))
     kas_secret_key = _parser['Server'].get('kas_secret_key', '')
-    cp_secret_key = _parser['Server'].get('cp_secret_key', '')
     public_address = _parser['Server'].get('public_address', '127.0.0.1')
 class DatabaseConfig:
     global _parser
