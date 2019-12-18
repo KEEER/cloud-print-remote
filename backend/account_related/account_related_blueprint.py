@@ -1,15 +1,16 @@
 # [In-project modules]
 from utils.user_status_detection import login_required
 from backend.account_related.session_manager import get_session_by_token, get_session_by_code
-from utils.kas_manager import pay, login
+from utils.kas_manager import pay, login, token_is_valid, get_kredit_amount
 from utils.security import secured_sign, verify
+from config import ServerConfig
 # [Python native modules]
 import logging
 import json
 import random
 import time
 # [Third-party modules]
-from flask import Blueprint, request, render_template, redirect
+from flask import Blueprint, request, render_template, redirect, make_response
 
 class CONSTS:
     TOKEN = 'kas-account-token'
@@ -18,8 +19,8 @@ class CONSTS:
     ILLEGAL_REQUEST = ('Illegal Request', 401)
     class ROUTES:
         REQUEST_JOB_TOKEN = '/_api/job-token'
-        REQUEST_JOB_CODES = '/_api/codes'
-        DELETE_JOB_TOKEN = '/_api/delete-job-token'
+        REQUEST_SESSION = '/_api/session'
+        DELETE_JOB_TOKEN = '/_api/delete-job'
         LOGIN = '/login'
         INDEX = '/'
         
@@ -82,29 +83,47 @@ def process_request_job_token():
             })
 
     
-@account_related_blueprint.route(CONSTS.ROUTES.REQUEST_JOB_CODES, methods = ['GET'])
+@account_related_blueprint.route(CONSTS.ROUTES.REQUEST_SESSION, methods = ['GET'])
 @login_required
-def process_request_job_codes():
+def process_request_session():
     token = request.cookies.get(CONSTS.TOKEN,'')
+    
     session = get_session_by_token(token)
     jobs = session.get_all_jobs()
+    kredit = get_kredit_amount(token)
+    timestamp = str(int(time.time()))
+    logger.debug('[in request session] Session=> '+str(session))
     return json.dumps({
         'codes': jobs,
-        'sign': secured_sign(','.join(jobs))
+        'kredit': kredit,
+        'timestamp': timestamp,
+        'debt': session.get_debt(),
+        'sign': secured_sign(','.join(jobs)+timestamp)
     })
 
 @account_related_blueprint.route(CONSTS.ROUTES.DELETE_JOB_TOKEN, methods = ['GET'])
 def process_delete_job_token():
     code = request.args.get('code', '')
     sign = request.args.get('sign', '')
-    if code == '' or sign == '':
+    if code == '':
         return CONSTS.INVALID_FORM
-    if not verify(code, sign):
-        return CONSTS.ILLEGAL_REQUEST
+    if sign == '' or not verify(code, sign):
+        if request.cookies.get('kas-account-token', '') == '':
+            return redirect(login())
+        elif not token_is_valid(request.cookies.get('kas-account-token')):
+            response = make_response(redirect(login()))
+            if not ServerConfig.debug:
+                # in the real server
+                response.set_cookie('kas-account-token', '', max_age = 0, domain = '.keeer.net')
+            else:
+                response.set_cookie('kas-account-token', '', max_age = 0)
+            return response
     
     session = get_session_by_code(code)
+    logger.debug('[in delete job] Session=> '+str(session))
     if session != None:
         session.remove_job(code)
+        del(session)
     else:
         return json.dumps({
             'status': 1,

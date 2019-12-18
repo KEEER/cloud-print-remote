@@ -83,7 +83,18 @@ def pay(kiuid, amount):
         return True, '成功'
     return False, response['message']
 
-
+def get_kredit_amount(token):
+    response = requests.get(
+        'https://account.keeer.net/api/kredit/request',
+        params = {
+            'token': token
+        },
+        headers = CONSTS.REQUEST_HEADER
+    )
+    if response.status_code != 200:
+        raise Exception(response.text,response.status_code)
+    response = response.json()
+    return response['result']
 def login():
     return 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s&theme=%s' % (
         CONSTS.NAME,

@@ -7,17 +7,16 @@ body {
     
 }
 .file-drop-zone {
-    width: 80vw;
+    width: 80%;
     border: 1px dashed var(--mdc-theme-primary);
     border-radius: 20px;
     padding: 16px;
-    margin: 8px;
+    margin-top: 8px;
     
     transition: box-shadow 0.3s ease;
 }
 .file-drop-zone__focused{
-    box-shadow: inset 0 0 4px 2px var(--mdc-theme-primary);
-    
+    box-shadow: inset 0 0 4px 2px var(--mdc-theme-primary);   
 }
 
 .file-drop__helper {
@@ -26,15 +25,18 @@ body {
 }
 
 .printer-card {
-    padding: 16px;
+    padding: 0 16px 16px 16px;
+    border-radius: 0 0 20px 20px;
     display: flex;
     flex-direction: row;
     justify-content: center;
+    width: 80%;
 }
 .printer-card__logo {
     border-radius: 50%;
     max-width: 30%;
-    margin-right: 16px;
+    margin: 16px;
+    
 }
 
 .printer-card__content {
@@ -68,12 +70,88 @@ body {
 .mdc-typography--headline5 {
     margin: 8px 0 0 0;
 }
+.file-list-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+}
+.job-card {
+    margin: 8px;
+    padding: 8px;
+    width: 100%;
+    text-align: left;
+}
+.job-card--content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.job-title {
+    margin: 4px;
+    width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.job-card--options {
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    align-self: left;
+    width: 30%;
+    margin-bottom: 16px;
+}
+.mdc-switch {
+    margin-right: 8px;
+}
+.switch {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+    color: var(--mdc-theme-primary);
+}
+
+.mdc-text-field--focused .mdc-text-field__input:required~.mdc-floating-label::after,.mdc-text-field--focused .mdc-text-field__input:required~.mdc-notched-outline .mdc-floating-label::after {
+    color: var(--mdc-theme-primary);
+    color: var(--mdc-theme-primary);
+    
+}
+
+.mdc-text-field {
+    transition: margin-top 0.1s ease;
+    margin-top: 8px;
+}
+.mdc-text-field--focused {
+    margin-top: 16px;
+}
+.invisible {
+    display: none;
+}
+
+
 @media(max-width: 720px) {
     .printer-card {
-        padding: 16px;
-        display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
+    }
+    .job-card--options {
+        align-self: center;
+        text-align: center;
+        width: 80%;
+    }
+    .job-card--content {
+        flex-direction: column;
+    }
+    .drag-info {
+        display: none;
+    }
+    .job-title {
+        width: 90%;
     }
 }

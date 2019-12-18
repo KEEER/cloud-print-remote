@@ -3,83 +3,287 @@
 {% block title %} 上传文件 | Cloud Print {% endblock title%}
 
 {% block stylesheet%}
-  <link rel="stylesheet" href="/static/css/index.css" />
+<link rel="stylesheet" href="/static/css/index.css" />
 {% endblock stylesheet %}
 
 {% block content %}
-  <div class="file-drop-container">
-    <div class="file-drop-zone" id="file-zone" accept="application/pdf">
-      <div class="printer-card">
-        <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
-        <div class="printer-card__content">
-          <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;">ICC楼四层东侧</h5>
-          <div class="printer-card__status">
-            <span clas="mdc-typography--body1">状态： </span>
-            <span class="printer-status printer-status__unavaliable">⬤</span>
-            <span clas="mdc-typography--body1">不可用</span>
-          </div>
-          <span clas="mdc-typography--body1">描述：这是一台打印机</span>
-        </div>
+  <div class="mdc-card printer-card">
+    <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
+    <div class="printer-card__content">
+      <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;">ICC楼四层东侧</h5>
+      <div class="printer-card__status">
+        <span clas="mdc-typography--body1">状态： </span>
+        <span class="printer-status printer-status__unavaliable">⬤</span>
+        <span clas="mdc-typography--body1">不可用</span>
       </div>
-
-      <h5 class="mdc-typography--headline5">
-        拖放或
-        <button class="mdc-button mdc-button--outlined" onclick="document.getElementById('file').click()">
-          <span class="mdc-button__label">选择</span>
-        </button>
-        一个文件
-      </h5>
-        <h5 class="mdc-typography--headline5 file-drop__helper" id="upload-info">☺️ 拖拽文件到这里</h5>
+      <span clas="mdc-typography--body1">描述：这是一台打印机</span>
     </div>
   </div>
-  <input id="file" type="file" accept="application/pdf" style="display: none;"/>
+  <div class="file-list-container" id="job-list">
+  </div>
+  <div class="file-drop-zone" id="file-zone">
+    <span class="mdc-typography--headline5 drag-info" id="upload-info">☺️ 拖拽您要打印的文件到这里</span>
+    <p class="drag-info">或者</p>
+    <div>
+      <button onclick="javascript: document.getElementById('file').click();" class="mdc-button mdc-button--raised">选择一个文件</button>
+    </div>
+  </div>
+  <div class="mdc-dialog"
+     role="alertdialog"
+     aria-modal="false"
+     aria-labelledby="my-dialog-title"
+     aria-describedby="my-dialog-content">
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="my-dialog-title"><!--
+      -->您的打印码<!--
+    --></h2>
+        <div class="mdc-dialog__content"> 
+          <h3 class="mdc-typography--headline3"id="print-code"></h3>
+          <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span>
+          <p></p>
+          <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span>
+        </div>
+        <footer class="mdc-dialog__actions">
+          <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+            <span class="mdc-button__label">关闭</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+<input id="file" type="file" accept="application/pdf" style="display: none;" />
 {% endblock content %}
 {% block script %}
-  <script type="text/javascript">
-    const dragAndDropZone = document.getElementById('file-zone')
-    const infoBox = document.getElementById('upload-info')
-    const file = document.getElementById('file')
-    var t;
-    function setMessage(message) {
-      infoBox.style.opacity = 1;
-			  infoBox.innerText = message;
-    }
+<script src="https://cdn.jsdelivr.net/npm/@material/dialog@2.3.0/dist/mdc.dialog.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@material/switch@2.3.0/dist/mdc.switch.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@material/auto-init@2.3.0/dist/mdc.autoInit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@material/textfield@2.3.0/dist/mdc.textfield.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@material/dialog@2.3.0/dist/mdc.dialog.min.js"></script>
+<script id="jobTemplate" language="x/template">
+  <div class="mdc-card job-card" id="job-::id::">
+    <div class="job-card--content">
+    <span class="mdc-typography--headline5 job-title">::jobTitle::</span>
+    <span class="mdc-typography--body">共 <span id="page-number">::pageNumber::</span> 页；
+                                          <span id="price">::price::</span> 元
+    </span>
+    </div>
+    <div class="job-card--options">
+      <div class="switch">
+        <div class="mdc-switch" id="ds-switch" data-mdc-auto-init="MDCSwitch">
+          <div class="mdc-switch__track"></div>
+          <div class="mdc-switch__thumb-underlay">
+            <div class="mdc-switch__thumb">
+              <input type="checkbox" id="double-sided-switch" class="mdc-switch__native-control" role="switch" />
+            </div>
+          </div>
+        </div>
+        <label for="double-sided-switch">双面打印</label>
+      </div>
+      <div class="switch">
+        <div class="mdc-switch" id="c-switch" data-mdc-auto-init="MDCSwitch">
+          <div class="mdc-switch__track"></div>
+          <div class="mdc-switch__thumb-underlay">
+            <div class="mdc-switch__thumb">
+              <input type="checkbox" id="color-swtich" class="mdc-switch__native-control" role="switch" />
+            </div>
+          </div>
+        </div>
+        <label for="color-switch">彩色打印</label>
+      </div>
 
-    dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function(evt) {
-			  evt.preventDefault();
-			  dragAndDropZone.classList.add('file-drop-zone__focused');
+      <div class="mdc-text-field mdc-text-field--outlined copies" id="c" data-mdc-auto-init="MDCTextField">
+        <input id="copies" type="number" min="1" max="10" step="1" class="mdc-text-field__input" value="1" required />
+        <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+          <div class="mdc-notched-outline__leading"></div>
+          <div class="mdc-notched-outline__notch" style="">
+            <label for="copies" class="mdc-floating-label mdc-floating-label--float-above" style="">打印份数</label>
+          </div>
+          <div class="mdc-notched-outline__trailing"></div>
+        </div>
+      </div>
+    </div>
 
-			  infoBox.style.opacity = 0;
-			};
-			dragAndDropZone.ondragleave = function(evt) {
-				evt.preventDefault();
-				dragAndDropZone.classList.remove('file-drop-zone__focused');
-
-        setMessage('☺️ 拖拽文件到这里');
-			}
-			dragAndDropZone.ondrop = function(evt) {
-			  dragAndDropZone.classList.remove('file-drop-zone__focused');
-			  console.log(evt.dataTransfer.files[0]);
-			  t = evt.dataTransfer.files[0];
-			  if (evt.dataTransfer.files[0].type !== 'application/pdf') {
-				  evt.preventDefault();
-				  setMessage('💀 请上传 PDF 文件');
-				  return;
-			  }
-        // TODO: real upload and request part
-        file.files = evt.dataTransfer.files
-			  setMessage('🤗 好嘞，正在上传'+evt.dataTransfer.files[0].name);
-			  evt.preventDefault();
-			};
-      file.addEventListener('change', function(e) {
-        console.log('Event change', e)
-        t = file.files[0];
-        console.log('file: ', t)
-			  if (t.type !== 'application/pdf') {
-				  setMessage('💀 请上传 PDF 文件');
-				  return;
-			  }
-        setMessage('🤗 好嘞，正在上传'+t.name);
+    <div class="job-card--actions">
+      <button id="go-print" class="mdc-button mdc-button--raised">去打印</button>
+      <button id="delete-job" class="mdc-button mdc-button--outlined">删除任务</button>
+    </div>
+    <input type="file" style="display: none;" id="file-body"></input>
+  </div>
+</script>
+<script type="text/javascript">
+  var $ = function (value) { return document.querySelector(value) }
+  var currentStatus = {
+    "jobNumber": 0,
+    "kreditAvaliable": 0,
+    "inDebt": false
+  }
+  
+  const MAX_JOB_NUMBER = 1;
+  var jobTemplate = $('#jobTemplate').innerHTML
+  mdc.autoInit.mdcAutoInit.register('MDCTextField', mdc.textfield.MDCTextField)
+  mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTextFieldHelperText)
+  mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
+  var dialogBox = new mdc.dialog.MDCDialog($('.mdc-dialog'))
+  function popDialog(jobCode) {
+    $('#print-code').innerText = jobCode
+    dialogBox.open()
+  }
+  var hideUploadField = function() {
+    console.log('hideJob')
+    $('#file-zone').classList.add('invisible')
+  }
+  var showUploadField = function() {
+    console.log('showJob')
+    $('#file-zone').classList.remove('invisible')
+  }
+  var deleteJob = function(code) {
+    fetch('/_api/delete-job?code='+code).then(function(res){
+      console.log('Execute: ', '/_api/delete-job?code='+code)
+      res.json().then(function(response){
+        console.log('Delete job response: ', response)
       })
-  </script>
+    }).catch(function(reason){console.log(reason)})
+  }
+  var createJob = function() {
+    fetch('/_api/job-token').then(function(res){
+      res.json().then(function(response) {
+        console.log('Create job successfully.', response)
+        return response.code
+      })
+    }).catch(function(reason){console.log('Failed: ', reason)})
+  }
+  var requestJobToken = function(code) {
+    fetch('/_api/job-token?code='+code).then(function(res){
+      return res.json()
+    }).catch(function(reason){console.log(reason)})
+  }
+  var addJob = function (fileName, code=null, init=false) {
+    if(currentStatus.jobNumber > MAX_JOB_NUMBER) {
+      console.log('Maximum job number reached; rejected')
+      hideUploadField()
+      return 'Maximum job number reached'
+    }
+    if(!init) currentStatus.jobNumber ++
+    if (code === null) code = createJob()
+    $('#job-list').innerHTML += jobTemplate.replace(/::id::/g, currentStatus.jobNumber)
+                                           .replace(/::jobTitle::/g, fileName)
+                                           .replace(/::pageNumber::/g, 0)
+                                           .replace(/::price::/g, 0)
+    mdc.autoInit.mdcAutoInit()
+    var jobSelector = '#job-' + currentStatus.jobNumber
+    var $$ = function(selector) { return $(jobSelector).querySelector(selector)}
+    var doubleSidedSwitch = $$('#double-sided-switch')
+    var colorSwitch = $$('#color-switch')
+    var copiesTextfield = $$('#copies')
+    var printButton = $$('#go-print')
+    var deleteJobButton = $$('#delete-job')
+    
+    printButton.onclick = function() {
+      popDialog(code)
+    }
+    deleteJobButton.onclick = function () {
+      currentStatus.jobNumber --
+      if(currentStatus.jobNumber < MAX_JOB_NUMBER) showUploadField()
+      deleteJob(code)
+      $(jobSelector).remove()
+    }
+    
+    if(currentStatus.jobNumber >= MAX_JOB_NUMBER) {
+      console.log('Maximum job number reached')
+      hideUploadField()
+      return 'Maximum job number reached'
+    }
+  }
+  // get the session and update the currentStatus
+  fetch('/_api/session').then(function(res){
+    res.json().then(function(response) {
+      currentStatus.jobNumber = response.codes.length
+      console.log('Session response: ', response)
+      for(let i = 0;i < response.codes.length; i++) {
+        /* TODO: request endpoint
+        fetch('/_api/job').then(function(res){
+
+        })*/
+        console.log('Loop executed', i)
+        addJob('文件', response.codes[i])
+      }
+      if (response.debt > 0) currentStatus.inDebt = true;
+      currentStatus.kreditAvaliable = response.kredit
+      console.log('Fetch succeed', currentStatus)
+    })
+  }).catch(function(reason){console.log(reason)})
+  //const dialog = new mdc.dialog.MDCDialog($('#dialog'))
+  //dialog.open();
+  const dragAndDropZone = document.getElementById('file-zone')
+  const infoBox = document.getElementById('upload-info')
+  const file = document.getElementById('file')
+  /* TODO
+  function getJobToken() {
+    return fetch('/_api/job-token', )
+  }
+  function uploadFile() {
+    getJobToken().then(function(res) {
+      return fetch()
+    }).then().catch()
+  }
+  function changeOption() {
+    getJobToken().then(function(res) {
+      ...
+      return fetch()
+    }).then().catch()
+  }*/
+ /*
+  const colorSwitch = new mdc.switch.MDCSwitch($('#color-switch'))
+  const doubleSidedSwitch = new mdc.switch.MDCSwitch($('#double-sided-switch'))
+  const copies = new mdc.textfield.MDCTextField($('#copies'))
+  */
+  var t;
+  function setMessage(message) {
+    infoBox.style.opacity = 1;
+    infoBox.innerText = message;
+  }
+
+  dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function (evt) {
+    evt.preventDefault();
+    dragAndDropZone.classList.add('file-drop-zone__focused');
+
+    infoBox.style.opacity = 0;
+  };
+  dragAndDropZone.ondragleave = function (evt) {
+    evt.preventDefault();
+    dragAndDropZone.classList.remove('file-drop-zone__focused');
+
+    setMessage('☺️ 拖拽文件到这里');
+  }
+  dragAndDropZone.ondrop = function (evt) {
+    dragAndDropZone.classList.remove('file-drop-zone__focused');
+    console.log(evt.dataTransfer.files[0]);
+    t = evt.dataTransfer.files[0];
+    if (evt.dataTransfer.files[0].type !== 'application/pdf') {
+      evt.preventDefault();
+      setMessage('💀 请上传 PDF 文件');
+      return;
+    }
+    // TODO: real upload and request part
+    file.files = evt.dataTransfer.files
+    
+    setMessage('🤗 好嘞，正在上传' + evt.dataTransfer.files[0].name);
+    element.onchange();
+    evt.preventDefault();
+  };
+  file.addEventListener('change', function (e) {
+    console.log('Event change', e)
+    t = file.files[0];
+    console.log('file: ', t)
+    if (t.type !== 'application/pdf') {
+      setMessage('💀 请上传 PDF 文件');
+      return;
+    }
+    setMessage('🤗 好嘞，正在上传' + t.name);
+    addJob(t)
+  })
+</script>
 {% endblock script%}
