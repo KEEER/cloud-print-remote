@@ -10,13 +10,13 @@
   <div class="mdc-card printer-card">
     <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
     <div class="printer-card__content">
-      <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;">ICC楼四层东侧</h5>
+      <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
       <div class="printer-card__status">
         <span clas="mdc-typography--body1">状态： </span>
-        <span class="printer-status printer-status__unavaliable">⬤</span>
-        <span clas="mdc-typography--body1">不可用</span>
+        <span class="printer-status printer-status__unavaliable" id="printer-status-icon">⬤</span>
+        <span clas="mdc-typography--body1" id="printer-status">不可用</span>
       </div>
-      <span clas="mdc-typography--body1">描述：这是一台打印机</span>
+      <span clas="mdc-typography--body1" id="printer-description">描述：这是一台打印机</span>
     </div>
   </div>
   <div class="file-list-container" id="job-list">
@@ -120,7 +120,44 @@
     "kreditAvaliable": 0,
     "inDebt": false
   }
-  
+  var currentPrinter = null;
+  var printerConfigs = await fetch('/_api/printer-ips').json()
+  for(var id in Object.keys(printerConfigs)) {
+    var ip = printerConfigs[id]
+    var printerConfig = await fetch(ip+'/status', {method: 'GET'}, 3000)
+    if(printerConfig.ok) {
+      var config = await printerConfig.json()
+      currentPrinter = {
+        "id": id,
+        "ip": ip,
+        "avaliable": true,
+        "name": config.name,
+        "description": config.message
+      }
+      break
+    }
+  }
+
+  if (!currentPrinter) {
+    // TODO:
+  }
+  var setPrinterAvaliability = function(isAvaliable) {
+    $('#printer-status-icon').classList.add(isAvaliable ? 'printer-status__avaliable': 'printer-status__unavaliable')
+    $('#printer-status').innerText = isAvaliable ? '就绪' : '不可用'
+  }
+  var updatePrinterInfo = async function() {
+    try {
+      var newConfig = await(currentPrinter.ip+'/status').json()
+      currentPrinter.description = newConfig.message
+    } catch(e) {
+      console.log("Network Changed: ", e)
+      // TODO
+    }
+    $('#printer-info').innerText = currentPrinter.name
+    $('#printer-description').innerText = currentPrinter.description
+  }
+  await updatePrinterInfo()
+
   const MAX_JOB_NUMBER = 1;
   var jobTemplate = $('#jobTemplate').innerHTML
   mdc.autoInit.mdcAutoInit.register('MDCTextField', mdc.textfield.MDCTextField)
@@ -139,102 +176,108 @@
     console.log('showJob')
     $('#file-zone').classList.remove('invisible')
   }
-  var deleteJob = function(code) {
-    fetch('/_api/delete-job?code='+code).then(function(res){
-      console.log('Execute: ', '/_api/delete-job?code='+code)
-      res.json().then(function(response){
-        console.log('Delete job response: ', response)
+  var deleteJob = async function(id, token) {
+    return fetch(currentPrinter.ip + '/delete-job', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        'id': id,
+        'token': token
       })
-    }).catch(function(reason){console.log(reason)})
+    })
   }
-  var createJob = function() {
-    fetch('/_api/job-token').then(function(res){
-      res.json().then(function(response) {
-        console.log('Create job successfully.', response)
-        return response.code
-      })
-    }).catch(function(reason){console.log('Failed: ', reason)})
+  var createJob = async function() {
+    return await fetch('/_api/job-token').json()
   }
-  var requestJobToken = function(code) {
-    fetch('/_api/job-token?code='+code).then(function(res){
-      return res.json()
-    }).catch(function(reason){console.log(reason)})
+  var requestJobToken = async function(code) {
+    return fetch('/_api/job-token?code='+code).json()
   }
-  var addJob = function (fileName, code=null, init=false) {
-    if(currentStatus.jobNumber > MAX_JOB_NUMBER) {
-      console.log('Maximum job number reached; rejected')
-      hideUploadField()
-      return 'Maximum job number reached'
-    }
-    if(!init) currentStatus.jobNumber ++
-    if (code === null) code = createJob()
-    $('#job-list').innerHTML += jobTemplate.replace(/::id::/g, currentStatus.jobNumber)
-                                           .replace(/::jobTitle::/g, fileName)
-                                           .replace(/::pageNumber::/g, 0)
-                                           .replace(/::price::/g, 0)
+  var requestJobInfo = async function(code) {
+    return fetch(currentPrinter.ip + '/get-configs').json()
+  }
+  var updateConfig = async function(id, doubleSided, withColor, copies) {
+    return fetch(currentPrinter.ip + '/set-config', 
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          'id': id,
+          'config': {
+            'copies': copies,
+            'color': withColor,
+            'double-sided': doubleSided 
+          }
+        })
+      }
+    ).json()
+  }
+  var uploadFile = async function(fileObject, token) {
+    var fileForm = new FormData()
+    fileForm.append("file", fileObject.files[0])
+    fileForm.append("token", token)
+    return fetch(currentPrinter.ip + '/job',{
+      method: 'POST',
+      body: fileForm
+    }).json()
+  }
+
+  
+  var addJob = function (fileName, code, ) {
+    $('#job-list').innerHTML += jobTemplate
+      .replace(/::id::/g, currentStatus.jobNumber)
+      .replace(/::jobTitle::/g, fileName)
+      .replace(/::pageNumber::/g, 0)
+      .replace(/::price::/g, 0)
     mdc.autoInit.mdcAutoInit()
     var jobSelector = '#job-' + currentStatus.jobNumber
+    // to distinguish between jobs
     var $$ = function(selector) { return $(jobSelector).querySelector(selector)}
-    var doubleSidedSwitch = $$('#double-sided-switch')
-    var colorSwitch = $$('#color-switch')
-    var copiesTextfield = $$('#copies')
+    // about info
+    var pageNumber = $$('#page-number')
+    var price = $$('#price') 
+    // about config
+    var doubleSidedSwitch =$$('#ds-switch').MDCSwitch
+    var colorSwitch = $$('#c-switch').MDCSwitch
+    var copiesTextfield = $$('#c').MDCTextField
+    // about action
     var printButton = $$('#go-print')
     var deleteJobButton = $$('#delete-job')
-    
+      
     printButton.onclick = function() {
       popDialog(code)
     }
+
     deleteJobButton.onclick = function () {
-      currentStatus.jobNumber --
-      if(currentStatus.jobNumber < MAX_JOB_NUMBER) showUploadField()
-      deleteJob(code)
-      $(jobSelector).remove()
+      deleteJob(code).then(function(){
+        $(jobSelector).remove()
+      })
     }
-    
-    if(currentStatus.jobNumber >= MAX_JOB_NUMBER) {
-      console.log('Maximum job number reached')
-      hideUploadField()
-      return 'Maximum job number reached'
+
+    doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
+      updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+        .then(function() {
+          // update price
+          return fetch(`/loopback.keeer.net:8080/_api/calculate-price?config={"page-count":${},"colored":${}}&printer_id=${}`)
+            
+        })
+        .then(function(response) {
+          console.log(response)
+        })
+        .catch(function(reason){console.log(reason)})
     }
   }
   // get the session and update the currentStatus
-  fetch('/_api/session').then(function(res){
-    res.json().then(function(response) {
-      currentStatus.jobNumber = response.codes.length
-      console.log('Session response: ', response)
-      for(let i = 0;i < response.codes.length; i++) {
-        /* TODO: request endpoint
-        fetch('/_api/job').then(function(res){
-
-        })*/
-        console.log('Loop executed', i)
-        addJob('文件', response.codes[i])
-      }
-      if (response.debt > 0) currentStatus.inDebt = true;
-      currentStatus.kreditAvaliable = response.kredit
-      console.log('Fetch succeed', currentStatus)
-    })
-  }).catch(function(reason){console.log(reason)})
+  var sessionObject = await fetch('/_api/session').json()
+  currentStatus.job
   //const dialog = new mdc.dialog.MDCDialog($('#dialog'))
   //dialog.open();
   const dragAndDropZone = document.getElementById('file-zone')
   const infoBox = document.getElementById('upload-info')
   const file = document.getElementById('file')
-  /* TODO
-  function getJobToken() {
-    return fetch('/_api/job-token', )
-  }
-  function uploadFile() {
-    getJobToken().then(function(res) {
-      return fetch()
-    }).then().catch()
-  }
-  function changeOption() {
-    getJobToken().then(function(res) {
-      ...
-      return fetch()
-    }).then().catch()
-  }*/
  /*
   const colorSwitch = new mdc.switch.MDCSwitch($('#color-switch'))
   const doubleSidedSwitch = new mdc.switch.MDCSwitch($('#double-sided-switch'))
@@ -249,7 +292,6 @@
   dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function (evt) {
     evt.preventDefault();
     dragAndDropZone.classList.add('file-drop-zone__focused');
-
     infoBox.style.opacity = 0;
   };
   dragAndDropZone.ondragleave = function (evt) {
