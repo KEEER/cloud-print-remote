@@ -115,54 +115,27 @@
 </script>
 <script type="text/javascript">
   var $ = function (value) { return document.querySelector(value) }
-  var currentStatus = {
-    "jobNumber": 0,
-    "kreditAvaliable": 0,
-    "inDebt": false
-  }
-  var currentPrinter = null;
-  var printerConfigs = await fetch('/_api/printer-ips').json()
-  for(var id in Object.keys(printerConfigs)) {
-    var ip = printerConfigs[id]
-    var printerConfig = await fetch(ip+'/status', {method: 'GET'}, 3000)
-    if(printerConfig.ok) {
-      var config = await printerConfig.json()
-      currentPrinter = {
-        "id": id,
-        "ip": ip,
-        "avaliable": true,
-        "name": config.name,
-        "description": config.message
-      }
-      break
-    }
-  }
-
-  if (!currentPrinter) {
-    // TODO:
-  }
-  var setPrinterAvaliability = function(isAvaliable) {
-    $('#printer-status-icon').classList.add(isAvaliable ? 'printer-status__avaliable': 'printer-status__unavaliable')
-    $('#printer-status').innerText = isAvaliable ? '就绪' : '不可用'
-  }
-  var updatePrinterInfo = async function() {
-    try {
-      var newConfig = await(currentPrinter.ip+'/status').json()
-      currentPrinter.description = newConfig.message
-    } catch(e) {
-      console.log("Network Changed: ", e)
-      // TODO
-    }
-    $('#printer-info').innerText = currentPrinter.name
-    $('#printer-description').innerText = currentPrinter.description
-  }
-  await updatePrinterInfo()
 
   const MAX_JOB_NUMBER = 1;
   var jobTemplate = $('#jobTemplate').innerHTML
   mdc.autoInit.mdcAutoInit.register('MDCTextField', mdc.textfield.MDCTextField)
   mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTextFieldHelperText)
   mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
+  // [element control]
+  class PrinterCard {
+    static _setPrinterAvaliability(isAvaliable) {
+      $('#printer-status-icon').classList.remove(isAvaliable ? 'printer-status__unavaliable': 'printer-status__avaliable')
+      $('#printer-status-icon').classList.add(isAvaliable ? 'printer-status__avaliable': 'printer-status__unavaliable')
+      $('#printer-status').innerText = isAvaliable ? '就绪' : '不可用'
+    }
+    static setPrinterInfo (name, isAvaliable, description) {
+      $('#printer-info').innerText = name
+      this._setPrinterAvaliability(isAvaliable)
+      $('#printer-description').innerText = description
+    }
+  }
+  PrinterCard.setPrinterInfo('A printer', true, 'This is a printer; I like printers; Printers are good for our health.')
+  
   var dialogBox = new mdc.dialog.MDCDialog($('.mdc-dialog'))
   function popDialog(jobCode) {
     $('#print-code').innerText = jobCode
@@ -176,6 +149,103 @@
     console.log('showJob')
     $('#file-zone').classList.remove('invisible')
   }
+  var addJob = function (fileName, code, id, config) {
+      $('#job-list').innerHTML += jobTemplate
+        .replace(/::id::/g, currentStatus.jobNumber)
+        .replace(/::jobTitle::/g, fileName)
+        .replace(/::pageNumber::/g, config.copies)
+        .replace(/::price::/g, 10)
+      mdc.autoInit.mdcAutoInit()
+      var jobSelector = '#job-' + currentStatus.jobNumber
+      // to distinguish between jobs
+      var $$ = function(selector) { return $(jobSelector).querySelector(selector)}
+      // about info
+      var pageNumber = $$('#page-number')
+      var price = $$('#price') 
+      // about config
+      var doubleSidedSwitch =$$('#ds-switch').MDCSwitch
+      var colorSwitch = $$('#c-switch').MDCSwitch
+      var copiesTextfield = $$('#c').MDCTextField
+      // about action
+      var printButton = $$('#go-print')
+      var deleteJobButton = $$('#delete-job')
+        
+      printButton.onclick = function() {
+        popDialog(code)
+      }
+
+      deleteJobButton.onclick = function () {
+        popDialog('Delete!')
+        // TODO
+      }
+
+      doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
+        /*
+        updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+          .then(function() {
+            // update price
+            return 
+              
+          })
+          .then(function(response) {
+            console.log(response)
+          })
+          .catch(function(reason){console.log(reason)})
+        */
+        if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
+        console.log('Value changed')
+      }
+    }
+  //end element control
+/*
+  var currentStatus = {
+    "jobNumber": 0,
+    "kreditAvaliable": 0,
+    "inDebt": false
+  }
+  var currentPrinter = {
+    "id": 255,
+    "ip": '0.0.0.0',
+    "avaliable": true,
+    "name": 'A printer',
+    "description": 'This is a printer; I like printers; Printers are good for our health.'
+  };
+  var updatePrinter = async function() {
+    var printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
+    for(var id in Object.keys(printerConfigs)) {
+      var ip = printerConfigs[id]
+      var printerConfig = await fetch(ip+'/status', {method: 'GET'}, 3000)
+      if(printerConfig.ok) {
+        var config = await printerConfig.json()
+        currentPrinter = {
+          "id": id,
+          "ip": ip,
+          "avaliable": true,
+          "name": config.name,
+          "description": config.message
+        }
+        break
+      }
+    }
+
+    if (!currentPrinter) {
+      // TODO:
+      console.log("No printers Avaliable")
+    }
+  }
+  //updatePrinter()
+
+  var updatePrinterInfo = async function() {
+    try {
+      var newConfig = await(currentPrinter.ip+'/status').then(res => res.json())
+      currentPrinter.description = newConfig.message
+    } catch(e) {
+      console.log("Network Changed: ", e)
+      updatePrinter()
+    }
+    // TODO
+  }
+  //updatePrinterInfo()
   var deleteJob = async function(id, token) {
     return fetch(currentPrinter.ip + '/delete-job', {
       method: 'POST',
@@ -189,13 +259,20 @@
     })
   }
   var createJob = async function() {
-    return await fetch('/_api/job-token').json()
+    return await fetch('/_api/job-token').then(res => res.json())
   }
   var requestJobToken = async function(code) {
-    return fetch('/_api/job-token?code='+code).json()
+    return fetch('/_api/job-token?code='+code).then(res => res.json())
   }
+  var getPrice = async function(pageCount, colored) {
+    console.log(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`)
+    return fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(async (response)=> {
+      return await response.json()})
+  }
+  
+  
   var requestJobInfo = async function(code) {
-    return fetch(currentPrinter.ip + '/get-configs').json()
+    return fetch(currentPrinter.ip + '/get-configs').then(res => res.json())
   }
   var updateConfig = async function(id, doubleSided, withColor, copies) {
     return fetch(currentPrinter.ip + '/set-config', 
@@ -213,7 +290,7 @@
           }
         })
       }
-    ).json()
+    ).then(res => res.json())
   }
   var uploadFile = async function(fileObject, token) {
     var fileForm = new FormData()
@@ -222,67 +299,23 @@
     return fetch(currentPrinter.ip + '/job',{
       method: 'POST',
       body: fileForm
-    }).json()
+    }).then(res => res.json())
   }
 
   
-  var addJob = function (fileName, code, ) {
-    $('#job-list').innerHTML += jobTemplate
-      .replace(/::id::/g, currentStatus.jobNumber)
-      .replace(/::jobTitle::/g, fileName)
-      .replace(/::pageNumber::/g, 0)
-      .replace(/::price::/g, 0)
-    mdc.autoInit.mdcAutoInit()
-    var jobSelector = '#job-' + currentStatus.jobNumber
-    // to distinguish between jobs
-    var $$ = function(selector) { return $(jobSelector).querySelector(selector)}
-    // about info
-    var pageNumber = $$('#page-number')
-    var price = $$('#price') 
-    // about config
-    var doubleSidedSwitch =$$('#ds-switch').MDCSwitch
-    var colorSwitch = $$('#c-switch').MDCSwitch
-    var copiesTextfield = $$('#c').MDCTextField
-    // about action
-    var printButton = $$('#go-print')
-    var deleteJobButton = $$('#delete-job')
-      
-    printButton.onclick = function() {
-      popDialog(code)
-    }
-
-    deleteJobButton.onclick = function () {
-      deleteJob(code).then(function(){
-        $(jobSelector).remove()
-      })
-    }
-
-    doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
-      updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
-        .then(function() {
-          // update price
-          return fetch(`/loopback.keeer.net:8080/_api/calculate-price?config={"page-count":${},"colored":${}}&printer_id=${}`)
-            
-        })
-        .then(function(response) {
-          console.log(response)
-        })
-        .catch(function(reason){console.log(reason)})
-    }
-  }
+  
   // get the session and update the currentStatus
-  var sessionObject = await fetch('/_api/session').json()
-  currentStatus.job
-  //const dialog = new mdc.dialog.MDCDialog($('#dialog'))
-  //dialog.open();
+  var sessionObject = fetch('/_api/session').then(res => res.json()).then(response =>{
+    console.log(response)
+    // TODO
+  })
+  */
+
+
   const dragAndDropZone = document.getElementById('file-zone')
   const infoBox = document.getElementById('upload-info')
   const file = document.getElementById('file')
- /*
-  const colorSwitch = new mdc.switch.MDCSwitch($('#color-switch'))
-  const doubleSidedSwitch = new mdc.switch.MDCSwitch($('#double-sided-switch'))
-  const copies = new mdc.textfield.MDCTextField($('#copies'))
-  */
+
   var t;
   function setMessage(message) {
     infoBox.style.opacity = 1;
@@ -301,11 +334,11 @@
     setMessage('☺️ 拖拽文件到这里');
   }
   dragAndDropZone.ondrop = function (evt) {
+    evt.preventDefault();
     dragAndDropZone.classList.remove('file-drop-zone__focused');
     console.log(evt.dataTransfer.files[0]);
     t = evt.dataTransfer.files[0];
     if (evt.dataTransfer.files[0].type !== 'application/pdf') {
-      evt.preventDefault();
       setMessage('💀 请上传 PDF 文件');
       return;
     }
@@ -314,7 +347,6 @@
     
     setMessage('🤗 好嘞，正在上传' + evt.dataTransfer.files[0].name);
     element.onchange();
-    evt.preventDefault();
   };
   file.addEventListener('change', function (e) {
     console.log('Event change', e)
@@ -325,7 +357,7 @@
       return;
     }
     setMessage('🤗 好嘞，正在上传' + t.name);
-    addJob(t)
+    // TODO
   })
 </script>
 {% endblock script%}
