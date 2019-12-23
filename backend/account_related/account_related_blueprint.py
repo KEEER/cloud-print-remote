@@ -70,7 +70,10 @@ def process_request_job_token():
             })
         # in legal cases this will NEVER happen so... the format doesn't matter here
         # this shall be prevented from the front end.
-        return 'Too many jobs.'
+        return json.dumps({
+            'status': 1,
+            'message': 'Too many jobs.'
+        })
     else:
         if not session.has_job(code):
             # a fake code

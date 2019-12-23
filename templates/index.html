@@ -29,10 +29,11 @@
     </div>
   </div>
   <div class="mdc-dialog"
-     role="alertdialog"
-     aria-modal="false"
-     aria-labelledby="my-dialog-title"
-     aria-describedby="my-dialog-content">
+    id="go-print-dialog"
+    role="printdialog"
+    aria-modal="false"
+    aria-labelledby="my-dialog-title"
+    aria-describedby="my-dialog-content">
     <div class="mdc-dialog__container">
       <div class="mdc-dialog__surface">
         <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
@@ -54,6 +55,32 @@
     </div>
     <div class="mdc-dialog__scrim"></div>
   </div>
+  
+  <div class="mdc-dialog"
+    id="alert-dialog"
+    role="alertdialog"
+    aria-modal="false"
+    aria-labelledby="my-dialog-title"
+    aria-describedby="my-dialog-content">
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="my-dialog-title"><!--
+      -->提示<!--
+    --></h2>
+        <div class="mdc-dialog__content"> 
+          <h3 class="mdc-typography--headline3"id="alert-message"></h3>
+        </div>
+        <footer class="mdc-dialog__actions">
+          <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+            <span class="mdc-button__label">关闭</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+
 <input id="file" type="file" accept="application/pdf" style="display: none;" />
 {% endblock content %}
 {% block script %}
@@ -63,43 +90,43 @@
 <script src="https://cdn.jsdelivr.net/npm/@material/textfield@2.3.0/dist/mdc.textfield.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@material/dialog@2.3.0/dist/mdc.dialog.min.js"></script>
 <script id="jobTemplate" language="x/template">
-  <div class="mdc-card job-card" id="job-::id::">
+  <div class="mdc-card job-card" id="job-::code::">
     <div class="job-card--content">
     <span class="mdc-typography--headline5 job-title">::jobTitle::</span>
-    <span class="mdc-typography--body">共 <span id="page-number">::pageNumber::</span> 页；
-                                          <span id="price">::price::</span> 元
+    <span class="mdc-typography--body">共 <span id="page-number-::code::">::pageNumber::</span> 页；
+                                          <span id="price-::code::">::price::</span> 元
     </span>
     </div>
     <div class="job-card--options">
       <div class="switch">
-        <div class="mdc-switch" id="ds-switch" data-mdc-auto-init="MDCSwitch">
+        <div class="mdc-switch" id="ds-switch-::code::" data-mdc-auto-init="MDCSwitch">
           <div class="mdc-switch__track"></div>
           <div class="mdc-switch__thumb-underlay">
             <div class="mdc-switch__thumb">
-              <input type="checkbox" id="double-sided-switch" class="mdc-switch__native-control" role="switch" />
+              <input type="checkbox" id="double-sided-switch-::code::" class="mdc-switch__native-control" role="switch" />
             </div>
           </div>
         </div>
         <label for="double-sided-switch">双面打印</label>
       </div>
       <div class="switch">
-        <div class="mdc-switch" id="c-switch" data-mdc-auto-init="MDCSwitch">
+        <div class="mdc-switch" id="c-switch-::code::" data-mdc-auto-init="MDCSwitch">
           <div class="mdc-switch__track"></div>
           <div class="mdc-switch__thumb-underlay">
             <div class="mdc-switch__thumb">
-              <input type="checkbox" id="color-swtich" class="mdc-switch__native-control" role="switch" />
+              <input type="checkbox" id="color-swtich-::code::" class="mdc-switch__native-control" role="switch" />
             </div>
           </div>
         </div>
         <label for="color-switch">彩色打印</label>
       </div>
 
-      <div class="mdc-text-field mdc-text-field--outlined copies" id="c" data-mdc-auto-init="MDCTextField">
-        <input id="copies" type="number" min="1" max="10" step="1" class="mdc-text-field__input" value="1" required />
+      <div class="mdc-text-field mdc-text-field--outlined copies" id="c-::code::" data-mdc-auto-init="MDCTextField">
+        <input id="copies-::code::" type="number" min="1" max="10" step="1" class="mdc-text-field__input" value="1" required />
         <div class="mdc-notched-outline mdc-notched-outline--upgraded">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch" style="">
-            <label for="copies" class="mdc-floating-label mdc-floating-label--float-above" style="">打印份数</label>
+            <label for="copies-::code::" class="mdc-floating-label mdc-floating-label--float-above" style="">打印份数</label>
           </div>
           <div class="mdc-notched-outline__trailing"></div>
         </div>
@@ -107,8 +134,8 @@
     </div>
 
     <div class="job-card--actions">
-      <button id="go-print" class="mdc-button mdc-button--raised">去打印</button>
-      <button id="delete-job" class="mdc-button mdc-button--outlined">删除任务</button>
+      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印</button>
+      <button id="delete-job-::code::" class="mdc-button mdc-button--outlined">删除任务</button>
     </div>
     <input type="file" style="display: none;" id="file-body"></input>
   </div>
@@ -122,25 +149,32 @@
   mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTextFieldHelperText)
   mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
   // [element control]
-  class PrinterCard {
-    static _setPrinterAvaliability(isAvaliable) {
+  const printerCard = {
+    _setPrinterAvaliability(isAvaliable) {
       $('#printer-status-icon').classList.remove(isAvaliable ? 'printer-status__unavaliable': 'printer-status__avaliable')
       $('#printer-status-icon').classList.add(isAvaliable ? 'printer-status__avaliable': 'printer-status__unavaliable')
       $('#printer-status').innerText = isAvaliable ? '就绪' : '不可用'
-    }
-    static setPrinterInfo (name, isAvaliable, description) {
+    },
+    setPrinterInfo (name, isAvaliable, description) {
       $('#printer-info').innerText = name
       this._setPrinterAvaliability(isAvaliable)
       $('#printer-description').innerText = description
     }
   }
-  PrinterCard.setPrinterInfo('A printer', true, 'This is a printer; I like printers; Printers are good for our health.')
+  printerCard.setPrinterInfo('A printer', true, 'This is a printer; I like printers; Printers are good for our health.')
   
-  var dialogBox = new mdc.dialog.MDCDialog($('.mdc-dialog'))
+  var dialogBox = new mdc.dialog.MDCDialog($('#go-print-dialog'))
   function popDialog(jobCode) {
     $('#print-code').innerText = jobCode
     dialogBox.open()
   }
+
+  var alertBox = new mdc.dialog.MDCDialog($('#alert-dialog'))
+  function popAlert(message) {
+    $('#alert-message').innerText = message
+    alertBox.open()
+  }
+
   var hideUploadField = function() {
     console.log('hideJob')
     $('#file-zone').classList.add('invisible')
@@ -150,57 +184,49 @@
     $('#file-zone').classList.remove('invisible')
   }
   var addJob = function (fileName, code, id, config) {
-      $('#job-list').innerHTML += jobTemplate
-        .replace(/::id::/g, currentStatus.jobNumber)
-        .replace(/::jobTitle::/g, fileName)
-        .replace(/::pageNumber::/g, config.copies)
-        .replace(/::price::/g, 10)
-      mdc.autoInit.mdcAutoInit()
-      var jobSelector = '#job-' + currentStatus.jobNumber
-      // to distinguish between jobs
-      var $$ = function(selector) { return $(jobSelector).querySelector(selector)}
-      // about info
-      var pageNumber = $$('#page-number')
-      var price = $$('#price') 
-      // about config
-      var doubleSidedSwitch =$$('#ds-switch').MDCSwitch
-      var colorSwitch = $$('#c-switch').MDCSwitch
-      var copiesTextfield = $$('#c').MDCTextField
-      // about action
-      var printButton = $$('#go-print')
-      var deleteJobButton = $$('#delete-job')
+    $('#job-list').innerHTML += jobTemplate
+      .replace(/::jobTitle::/g, fileName)
+      .replace(/::pageNumber::/g, config.copies)
+      .replace(/::price::/g, 10)
+      .replace(/::code::/g, code)
+    mdc.autoInit.mdcAutoInit()
+    var withCode = function(value) { return value + '-' + code}
+    // about info
+    var pageNumber = $(withCode('#page-number'))
+    var price = $(withCode('#price'))
+    // about config
+    var doubleSidedSwitch =$(withCode('#ds-switch')).MDCSwitch
+    var colorSwitch = $(withCode('#c-switch')).MDCSwitch
+    var copiesTextfield = $(withCode('#c')).MDCTextField
+    // about action
+    var printButton = $(withCode('#go-print'))
+    var deleteJobButton = $(withCode('#delete-job'))
         
-      printButton.onclick = function() {
-        popDialog(code)
-      }
-
-      deleteJobButton.onclick = function () {
-        popDialog('Delete!')
-        // TODO
-      }
-
-      doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
-        /*
-        updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
-          .then(function() {
-            // update price
-            return 
-              
-          })
-          .then(function(response) {
-            console.log(response)
-          })
-          .catch(function(reason){console.log(reason)})
-        */
-        if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
-        console.log('Value changed')
-      }
+    printButton.onclick = function() {
+      popDialog(code)
     }
+
+    deleteJobButton.onclick = function () {
+      ;( async() =>{
+        await deleteJob(id, await requestJobToken(code))
+        $(withCode('job')).remove()
+      })()
+    }
+
+    doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
+      ;( async() =>{
+        await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+      })()
+      if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
+      console.log('Value changed')
+    }
+  }
+  addJob('1234','1234', '129.12308130923', {'copies': 10})
   //end element control
-/*
+
   var currentStatus = {
-    "jobNumber": 0,
-    "kreditAvaliable": 0,
+    "codes": [],
+    "kredit": 0,
     "inDebt": false
   }
   var currentPrinter = {
@@ -210,11 +236,20 @@
     "name": 'A printer',
     "description": 'This is a printer; I like printers; Printers are good for our health.'
   };
+  // TODO: update using DNS
+  var constructEndpointURL = function(route) {return 'http://' + currentPrinter.ip + route}
+  /* untested */
   var updatePrinter = async function() {
+    // TODO: add DNS stuff
     var printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
-    for(var id in Object.keys(printerConfigs)) {
+    console.log("Get printer config: ", printerConfigs)
+    for(var id in printerConfigs) {
       var ip = printerConfigs[id]
-      var printerConfig = await fetch(ip+'/status', {method: 'GET'}, 3000)
+      console.log("Trying printer (id, ip): ", id, ip)
+      
+      // TODO: set timeout
+      printerConfig = await fetch('http://'+ip+'/status', {method: 'GET'})
+      
       if(printerConfig.ok) {
         var config = await printerConfig.json()
         currentPrinter = {
@@ -226,28 +261,29 @@
         }
         break
       }
+      console.log("Failed.")
     }
-
+    
     if (!currentPrinter) {
       // TODO:
       console.log("No printers Avaliable")
     }
   }
-  //updatePrinter()
-
+  /* untested */
   var updatePrinterInfo = async function() {
     try {
-      var newConfig = await(currentPrinter.ip+'/status').then(res => res.json())
+      var newConfig = await(constructEndpointURL('/status')).then(res => res.json())
       currentPrinter.description = newConfig.message
     } catch(e) {
       console.log("Network Changed: ", e)
       updatePrinter()
     }
-    // TODO
+    printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.avaliable, currentPrinter.description)
   }
-  //updatePrinterInfo()
+
+  /* Untested */
   var deleteJob = async function(id, token) {
-    return fetch(currentPrinter.ip + '/delete-job', {
+    return fetch(constructEndpointURL('/delete-job'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -258,24 +294,26 @@
       })
     })
   }
+
   var createJob = async function() {
     return await fetch('/_api/job-token').then(res => res.json())
   }
   var requestJobToken = async function(code) {
-    return fetch('/_api/job-token?code='+code).then(res => res.json())
+    return await fetch('/_api/job-token?code='+code).then(res => res.json())
   }
   var getPrice = async function(pageCount, colored) {
     console.log(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`)
-    return fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(async (response)=> {
-      return await response.json()})
+    return await fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(res=>res.json())
   }
   
-  
+  /* untested */
   var requestJobInfo = async function(code) {
-    return fetch(currentPrinter.ip + '/get-configs').then(res => res.json())
+    return fetch(constructEndpointURL('/get-configs')).then(res => res.json())
   }
+
+  /* untested */
   var updateConfig = async function(id, doubleSided, withColor, copies) {
-    return fetch(currentPrinter.ip + '/set-config', 
+    return await fetch(constructEndpointURL('/set-config'), 
       {
         method: 'POST',
         headers: {
@@ -292,11 +330,16 @@
       }
     ).then(res => res.json())
   }
-  var uploadFile = async function(fileObject, token) {
+  /* untested */
+  var uploadFile = async function(fileObject) {
     var fileForm = new FormData()
     fileForm.append("file", fileObject.files[0])
-    fileForm.append("token", token)
-    return fetch(currentPrinter.ip + '/job',{
+    var token = await createJob()
+    if(typeof token['status'] !== 'undefined' && token.status === 1){
+      popAlert('您上传的文件数量已经达到最大允许值')
+    }
+    fileForm.append("token")
+    return await fetch(constructEndpointURL('/job'),{
       method: 'POST',
       body: fileForm
     }).then(res => res.json())
@@ -305,12 +348,15 @@
   
   
   // get the session and update the currentStatus
-  var sessionObject = fetch('/_api/session').then(res => res.json()).then(response =>{
-    console.log(response)
-    // TODO
-  })
-  */
-
+  var getSession = async function() {
+    return await fetch('/_api/session').then(res => res.json())
+  }
+  var updateSession = async function() {
+    var sessionObject = await getSession()
+    if(sessionObject.debt > 0) currentStatus.inDebt = true
+    currentStatus.kredit = sessionObject.kredit
+    currentStatus.codes = sessionObject.codes
+  }
 
   const dragAndDropZone = document.getElementById('file-zone')
   const infoBox = document.getElementById('upload-info')
@@ -359,5 +405,9 @@
     setMessage('🤗 好嘞，正在上传' + t.name);
     // TODO
   })
+  ;(async()=>{
+    await updateSession()
+    await updatePrinter()
+  })()
 </script>
 {% endblock script%}
