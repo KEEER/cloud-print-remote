@@ -12,9 +12,14 @@
     <div class="printer-card__content">
       <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
       <div class="printer-card__status">
-        <span clas="mdc-typography--body1">状态： </span>
-        <span class="printer-status printer-status__unavaliable" id="printer-status-icon">⬤</span>
-        <span clas="mdc-typography--body1" id="printer-status">不可用</span>
+        <span clas="mdc-typography--body1">黑白打印机：</span>
+        <span class="printer-status printer-status__unavaliable" id="bw-printer-status-icon"> ⬤</span>
+        <span clas="mdc-typography--body1" id="bw-printer-status">不可用</span>
+      </div>
+      <div class="printer-card__status">
+        <span clas="mdc-typography--body1">彩色打印机：  </span>
+        <span class="printer-status printer-status__unavaliable" id="color-printer-status-icon"> ⬤</span>
+        <span clas="mdc-typography--body1" id="color-printer-status">不可用</span>
       </div>
       <span clas="mdc-typography--body1" id="printer-description">描述：这是一台打印机</span>
     </div>
@@ -81,6 +86,37 @@
     <div class="mdc-dialog__scrim"></div>
   </div>
 
+  <div class="mdc-dialog"
+    id="recharge-dialog"
+    role="alertdialog"
+    aria-modal="false"
+    aria-labelledby="my-dialog-title"
+    aria-describedby="my-dialog-content">
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="my-dialog-title"><!--
+      -->您的 Kredit 余额可能不足以支持打印！<!--
+    --></h2>
+        <div class="mdc-dialog__content"> 
+          <span class="mdc-typography--body">当前打印任务共计：<span id="total-price"></span> 元</span>
+          <p></p>
+          <span class="mdc-typography--body">您当前的 Kredit 余额：<span id="total-kredit"></span> 元</span>
+          <p></p>
+
+        </div>
+        <footer class="mdc-dialog__actions">
+          <a class="mdc-button mdc-dialog__button" href="https://account.keeer.net/recharge" target="_blank">
+            去充值
+          </a>
+          <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+            <span class="mdc-button__label">我知道了</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
 <input id="file" type="file" accept="application/pdf" style="display: none;" />
 {% endblock content %}
 {% block script %}
@@ -114,7 +150,7 @@
           <div class="mdc-switch__track"></div>
           <div class="mdc-switch__thumb-underlay">
             <div class="mdc-switch__thumb">
-              <input type="checkbox" id="color-swtich-::code::" class="mdc-switch__native-control" role="switch" />
+              <input type="checkbox" id="color-switch-::code::" class="mdc-switch__native-control" role="switch" />
             </div>
           </div>
         </div>
@@ -150,19 +186,32 @@
   mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
   // [element control]
   const printerCard = {
-    _setPrinterAvaliability(isAvaliable) {
-      $('#printer-status-icon').classList.remove(isAvaliable ? 'printer-status__unavaliable': 'printer-status__avaliable')
-      $('#printer-status-icon').classList.add(isAvaliable ? 'printer-status__avaliable': 'printer-status__unavaliable')
-      $('#printer-status').innerText = isAvaliable ? '就绪' : '不可用'
+    _setBwPrinterStatus(status) {
+      $('#bw-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
+      $('#bw-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
+      $('#bw-printer-status').innerText = status.message === '' ? '就绪' : status.message
     },
-    setPrinterInfo (name, isAvaliable, description) {
+    _setColorPrinterStatus(status) {
+      $('#color-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
+      $('#color-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
+      $('#color-printer-status').innerText = status.message === '' ? '就绪' : status.message
+    },
+    setPrinterInfo (name, states, description) {
+      console.log('setPrinterInfo: status: ', states)
       $('#printer-info').innerText = name
-      this._setPrinterAvaliability(isAvaliable)
+      this._setBwPrinterStatus(states.bw)
+      this._setColorPrinterStatus(states.colored)
       $('#printer-description').innerText = description
     }
   }
-  printerCard.setPrinterInfo('A printer', true, 'This is a printer; I like printers; Printers are good for our health.')
+  printerCard.setPrinterInfo('A printer', {"bw":{"state":"idle","message":""},"colored":{"state":"idle","message":""},"halted":false}, 'This is a printer; I like printers; Printers are good for our health.')
   
+  var  priceWarningDialog = new mdc.dialog.MDCDialog($('#recharge-dialog'))
+  function popPriceWarning() {
+    $('#total-price').innerText = currentStatus.totalCost / 100
+    $('#total-kredit').innerText = currentStatus.kredit / 100
+    priceWarningDialog.open()
+  }
   var dialogBox = new mdc.dialog.MDCDialog($('#go-print-dialog'))
   function popDialog(jobCode) {
     $('#print-code').innerText = jobCode
@@ -186,22 +235,29 @@
   var addJob = function (fileName, code, id, config, pageCount) {
     var price = 0
     ;(async ()=>{
-      price = await getPrice(pageCount, config.colored)
-    
+      price = await getPrice(pageCount * config.copies, config.colored)
+      currentStatus.totalCost += price
+      if (currentStatus.totalCost > currentStatus.kredit) {
+        popPriceWarning()
+      }
       $('#job-list').innerHTML += jobTemplate
         .replace(/::jobTitle::/g, fileName)
         .replace(/::pageNumber::/g, pageCount)
-        .replace(/::price::/g, price)
+        .replace(/::price::/g, price / 100)
         .replace(/::code::/g, code)
       mdc.autoInit.mdcAutoInit()
       var withCode = function(value) { return value + '-' + code}
+      
       // about info
-      var pageNumber = $(withCode('#page-number'))
-      var price = $(withCode('#price'))
+      var pageNumberInfo = $(withCode('#page-number'))
+      var priceInfo = $(withCode('#price'))
       // about config
       var doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
+      doubleSidedSwitch.checked = config.colored
       var colorSwitch = $(withCode('#c-switch')).MDCSwitch
+      colorSwitch.checked = config['double-sided']
       var copiesTextfield = $(withCode('#c')).MDCTextField
+      copiesTextfield.value = config.copies
       // about action
       var printButton = $(withCode('#go-print'))
       var deleteJobButton = $(withCode('#delete-job'))
@@ -212,18 +268,29 @@
 
       deleteJobButton.onclick = function () {
         ;( async() =>{
-          await deleteJob(await requestJobToken(code))
+          await deleteJob(code)
           $(withCode('job')).remove()
         })()
       }
 
-      doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
+      console.log('log elements: ', doubleSidedSwitch, colorSwitch, copiesTextfield)
+      $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = function() {
+        console.log('Value Changed')
         ;( async() =>{
           await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+          temporaryValue = await getPrice(pageCount * copiesTextfield.value, colorSwitch.checked)
+          currentStatus.totalCost -= price
+          price = temporaryValue
+          currentStatus.totalCost += price
+          priceInfo.value = temporaryValue / 100
+          if (currentStatus.totalCost > currentStatus.kredit) {
+            popPriceWarning()
+          }
         })()
         if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
         console.log('Value changed')
       }
+
     })()
   }
   //end element control
@@ -231,6 +298,7 @@
   var currentStatus = {
     "codes": [],
     "kredit": 0,
+    totalCost: 0,
     "inDebt": false
   }
   var currentPrinter = {
@@ -259,11 +327,13 @@
         currentPrinter = {
           id,
           ip,
-          avaliable: true,
+          status: config.status,
           name: config.name,
           description: config.message,
           base,
         }
+        console.log('Status: ', config)
+        printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
         break
       } catch (e) {
         console.log('Failed.', e)
@@ -281,12 +351,13 @@
       var res = await fetch(constructEndpointURL('/status')).then(res => res.json())
       if (res.status !== 0) throw res
       const config = res.response
-      currentPrinter.description = newConfig.message
+      currentPrinter.description = config.message
+      currentPrinter.status = config.status
     } catch(e) {
       console.log("Network Changed: ", e)
       updatePrinter()
     }
-    printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.avaliable, currentPrinter.description)
+    printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
   }
 
   var deleteJob = async function(code) {
@@ -311,7 +382,7 @@
   var getPrice = async function(pageCount, colored) {
     console.log(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`)
     return await fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(res=>res.json()).then(response=> {
-      if(response.status === 0) return response.result / 100
+      if(response.status === 0) return response.result
       console.log('Error: ', response)
     })
   }
@@ -348,7 +419,7 @@
       }
     ).then(res => res.json())
   }
-  /* untested */
+
   var uploadFile = async function(fileObject) {
     var fileForm = new FormData()
     fileForm.append("file", fileObject)
@@ -380,6 +451,12 @@
     // get job info
     var jobInfo = await requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign)
     console.log('Got job info: ', jobInfo)
+    if(jobInfo.status === 0) {
+      /* untested */
+      for(var config in jobInfo.response) {
+        addJob('之前的打印任务', config.code, '', config.config, config['page-count'])
+      }
+    }
     if(sessionObject.debt > 0) currentStatus.inDebt = true
     currentStatus.kredit = sessionObject.kredit
     currentStatus.codes = sessionObject.codes
@@ -415,11 +492,10 @@
       setMessage('💀 请上传 PDF 文件');
       return;
     }
-    // TODO: real upload and request part
     file.files = evt.dataTransfer.files
     
     setMessage('🤗 好嘞，正在上传' + evt.dataTransfer.files[0].name);
-    element.onchange();
+    uploadFile(evt.dataTransfer.files[0])
   };
   file.addEventListener('change', function (e) {
     console.log('Event change', e)

@@ -104,6 +104,14 @@ def process_request_session():
         'sign': secured_sign(','.join(jobs)+timestamp)
     })
 
+@account_related_blueprint.route('/__api/delete', methods = ['GET'])
+@login_required
+def process_delete_all_codes():
+    token = request.cookies.get(CONSTS.TOKEN, '')
+    session = get_session_by_token(token)
+    session._jobs = []
+    return 'All clear.'
+    
 @account_related_blueprint.route(CONSTS.ROUTES.DELETE_JOB_TOKEN, methods = ['GET'])
 def process_delete_job_token():
     code = request.args.get('code', '')
