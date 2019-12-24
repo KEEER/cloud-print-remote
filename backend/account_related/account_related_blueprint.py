@@ -14,7 +14,7 @@ from flask import Blueprint, request, render_template, redirect, make_response
 
 class CONSTS:
     TOKEN = 'kas-account-token'
-    JOB_NUMBER_LIMIT = 3
+    JOB_NUMBER_LIMIT = 1000
     INVALID_FORM = ('Invalid Form', 400)
     ILLEGAL_REQUEST = ('Illegal Request', 401)
     class ROUTES:

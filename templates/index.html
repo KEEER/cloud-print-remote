@@ -183,45 +183,49 @@
     console.log('showJob')
     $('#file-zone').classList.remove('invisible')
   }
-  var addJob = function (fileName, code, id, config) {
-    $('#job-list').innerHTML += jobTemplate
-      .replace(/::jobTitle::/g, fileName)
-      .replace(/::pageNumber::/g, config.copies)
-      .replace(/::price::/g, 10)
-      .replace(/::code::/g, code)
-    mdc.autoInit.mdcAutoInit()
-    var withCode = function(value) { return value + '-' + code}
-    // about info
-    var pageNumber = $(withCode('#page-number'))
-    var price = $(withCode('#price'))
-    // about config
-    var doubleSidedSwitch =$(withCode('#ds-switch')).MDCSwitch
-    var colorSwitch = $(withCode('#c-switch')).MDCSwitch
-    var copiesTextfield = $(withCode('#c')).MDCTextField
-    // about action
-    var printButton = $(withCode('#go-print'))
-    var deleteJobButton = $(withCode('#delete-job'))
-        
-    printButton.onclick = function() {
-      popDialog(code)
-    }
+  var addJob = function (fileName, code, id, config, pageCount) {
+    var price = 0
+    ;(async ()=>{
+      price = await getPrice(pageCount, config.colored)
+    
+      $('#job-list').innerHTML += jobTemplate
+        .replace(/::jobTitle::/g, fileName)
+        .replace(/::pageNumber::/g, pageCount)
+        .replace(/::price::/g, price)
+        .replace(/::code::/g, code)
+      mdc.autoInit.mdcAutoInit()
+      var withCode = function(value) { return value + '-' + code}
+      // about info
+      var pageNumber = $(withCode('#page-number'))
+      var price = $(withCode('#price'))
+      // about config
+      var doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
+      var colorSwitch = $(withCode('#c-switch')).MDCSwitch
+      var copiesTextfield = $(withCode('#c')).MDCTextField
+      // about action
+      var printButton = $(withCode('#go-print'))
+      var deleteJobButton = $(withCode('#delete-job'))
 
-    deleteJobButton.onclick = function () {
-      ;( async() =>{
-        await deleteJob(id, await requestJobToken(code))
-        $(withCode('job')).remove()
-      })()
-    }
+      printButton.onclick = function() {
+        popDialog(code)
+      }
 
-    doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
-      ;( async() =>{
-        await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
-      })()
-      if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
-      console.log('Value changed')
-    }
+      deleteJobButton.onclick = function () {
+        ;( async() =>{
+          await deleteJob(await requestJobToken(code))
+          $(withCode('job')).remove()
+        })()
+      }
+
+      doubleSidedSwitch.onchange = colorSwitch.onchange = copiesTextfield.onchange = function() {
+        ;( async() =>{
+          await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+        })()
+        if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
+        console.log('Value changed')
+      }
+    })()
   }
-  addJob('1234','1234', '129.12308130923', {'copies': 10})
   //end element control
 
   var currentStatus = {
@@ -234,34 +238,36 @@
     "ip": '0.0.0.0',
     "avaliable": true,
     "name": 'A printer',
-    "description": 'This is a printer; I like printers; Printers are good for our health.'
+    "description": 'This is a printer; I like printers; Printers are good for our health.',
+    base: new URL('http://0.0.0.0/'),
   };
-  // TODO: update using DNS
-  var constructEndpointURL = function(route) {return 'http://' + currentPrinter.ip + route}
-  /* untested */
+  var constructEndpointURL = function (route) { return new URL(route, currentPrinter.base) }
+
   var updatePrinter = async function() {
     // TODO: add DNS stuff
     var printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
     console.log("Get printer config: ", printerConfigs)
     for(var id in printerConfigs) {
       var ip = printerConfigs[id]
-      console.log("Trying printer (id, ip): ", id, ip)
-      
-      // TODO: set timeout
-      printerConfig = await fetch('http://'+ip+'/status', {method: 'GET'})
-      
-      if(printerConfig.ok) {
-        var config = await printerConfig.json()
+      const base = new URL(`http://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
+      console.log("Trying printer id: ", id)
+    
+      try {
+        const res = await fetch(new URL('/status', base)).then(res => res.json())
+        if (res.status !== 0) throw res
+        const config = res.response
         currentPrinter = {
-          "id": id,
-          "ip": ip,
-          "avaliable": true,
-          "name": config.name,
-          "description": config.message
+          id,
+          ip,
+          avaliable: true,
+          name: config.name,
+          description: config.message,
+          base,
         }
         break
+      } catch (e) {
+        console.log('Failed.', e)
       }
-      console.log("Failed.")
     }
     
     if (!currentPrinter) {
@@ -269,10 +275,12 @@
       console.log("No printers Avaliable")
     }
   }
-  /* untested */
+
   var updatePrinterInfo = async function() {
     try {
-      var newConfig = await(constructEndpointURL('/status')).then(res => res.json())
+      var res = await fetch(constructEndpointURL('/status')).then(res => res.json())
+      if (res.status !== 0) throw res
+      const config = res.response
       currentPrinter.description = newConfig.message
     } catch(e) {
       console.log("Network Changed: ", e)
@@ -281,16 +289,15 @@
     printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.avaliable, currentPrinter.description)
   }
 
-  /* Untested */
-  var deleteJob = async function(id, token) {
+  var deleteJob = async function(code) {
+    const token = await requestJobToken(code)
     return fetch(constructEndpointURL('/delete-job'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        'id': id,
-        'token': token
+        token,
       })
     })
   }
@@ -303,15 +310,26 @@
   }
   var getPrice = async function(pageCount, colored) {
     console.log(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`)
-    return await fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(res=>res.json())
+    return await fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(res=>res.json()).then(response=> {
+      if(response.status === 0) return response.result / 100
+      console.log('Error: ', response)
+    })
   }
   
-  /* untested */
-  var requestJobInfo = async function(code) {
-    return fetch(constructEndpointURL('/get-configs')).then(res => res.json())
+  var requestAllInfo = async function(codes, timestamp, sign) {
+    return await fetch(constructEndpointURL('/get-configs'), {
+      method: 'post',
+      body: JSON.stringify({
+        codes,
+        timestamp,
+        sign
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(res => res.json())
   }
 
-  /* untested */
   var updateConfig = async function(id, doubleSided, withColor, copies) {
     return await fetch(constructEndpointURL('/set-config'), 
       {
@@ -333,16 +351,21 @@
   /* untested */
   var uploadFile = async function(fileObject) {
     var fileForm = new FormData()
-    fileForm.append("file", fileObject.files[0])
+    fileForm.append("file", fileObject)
     var token = await createJob()
     if(typeof token['status'] !== 'undefined' && token.status === 1){
       popAlert('您上传的文件数量已经达到最大允许值')
     }
-    fileForm.append("token")
+    fileForm.append("token", JSON.stringify(await createJob()))
     return await fetch(constructEndpointURL('/job'),{
       method: 'POST',
       body: fileForm
-    }).then(res => res.json())
+    }).then(res => res.json()).then(function(response) {
+      if (response.status === 0) {
+        response = response.response
+        addJob(fileObject.name, response.code, response.id, response.config, response["page-count"])
+      }
+    })
   }
 
   
@@ -351,8 +374,12 @@
   var getSession = async function() {
     return await fetch('/_api/session').then(res => res.json())
   }
+
   var updateSession = async function() {
     var sessionObject = await getSession()
+    // get job info
+    var jobInfo = await requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign)
+    console.log('Got job info: ', jobInfo)
     if(sessionObject.debt > 0) currentStatus.inDebt = true
     currentStatus.kredit = sessionObject.kredit
     currentStatus.codes = sessionObject.codes
@@ -404,10 +431,12 @@
     }
     setMessage('🤗 好嘞，正在上传' + t.name);
     // TODO
+    uploadFile(t)
   })
   ;(async()=>{
-    await updateSession()
     await updatePrinter()
+    await updatePrinterInfo()
+    await updateSession()
   })()
 </script>
 {% endblock script%}
