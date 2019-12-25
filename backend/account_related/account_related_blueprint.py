@@ -33,6 +33,7 @@ def index():
     return redirect(login())
     
 @account_related_blueprint.route(CONSTS.ROUTES.INDEX, methods = ['GET', 'POST'])
+@login_required
 def process_index():
     return render_template('index.html')
 
