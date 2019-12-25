@@ -8,19 +8,21 @@
 
 {% block content %}
   <div class="mdc-card printer-card">
-    <img class="printer-card__logo" src="https://squoosh.app/logo.af355.svg" />
+    <img class="printer-card__logo" src="/static/img/logo.png" />
     <div class="printer-card__content">
       <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
       <div class="printer-card__status">
-        <span clas="mdc-typography--body1">黑白打印机：</span>
+        <span clas="mdc-typography--body1">打印机：</span>
         <span class="printer-status printer-status__unavaliable" id="bw-printer-status-icon"> ⬤</span>
         <span clas="mdc-typography--body1" id="bw-printer-status">不可用</span>
       </div>
+      <!--
       <div class="printer-card__status">
         <span clas="mdc-typography--body1">彩色打印机：  </span>
         <span class="printer-status printer-status__unavaliable" id="color-printer-status-icon"> ⬤</span>
         <span clas="mdc-typography--body1" id="color-printer-status">不可用</span>
       </div>
+      -->
       <span clas="mdc-typography--body1" id="printer-description">描述：这是一台打印机</span>
     </div>
   </div>
@@ -117,6 +119,27 @@
     </div>
     <div class="mdc-dialog__scrim"></div>
   </div>
+
+  <div class="mdc-dialog"
+    id="loading-dialog"
+    role="alertdialog"
+    aria-modal="false"
+    aria-labelledby="my-dialog-title"
+    aria-describedby="my-dialog-content">
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="my-dialog-title"><!--
+      -->请稍候…<!--
+    --></h2>
+        <div class="mdc-dialog__content"> 
+          <img src="https://static.wixstatic.com/media/90541a_d3cf42a02fb448a5ad933227b77ff7e8~mv2.gif" />
+        </div>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+  
 <input id="file" type="file" accept="application/pdf" style="display: none;" />
 {% endblock content %}
 {% block script %}
@@ -186,25 +209,59 @@
   mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
   // [element control]
   const printerCard = {
-    _setBwPrinterStatus(status) {
-      $('#bw-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
-      $('#bw-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
-      $('#bw-printer-status').innerText = status.message === '' ? '就绪' : status.message
+    _setBwPrinterStatus(status, isHalted) {
+      if (isHalted) {
+        $('#bw-printer-status-icon').classList.remove('printer-status__unavaliable')
+        $('#bw-printer-status-icon').classList.remove('printer-status__busy')
+        $('#bw-printer-status-icon').classList.remove('printer-status__avaliable')
+
+        $('#bw-printer-status-icon').classList.add('printer-status__fixing')
+        $('#bw-printer-status').innerText = '维修或调试中'
+        return
+      }
+
+      switch(status.state) {
+        case 'idle':
+          $('#bw-printer-status-icon').classList.remove('printer-status__unavaliable')
+          $('#bw-printer-status-icon').classList.remove('printer-status__busy')
+          $('#bw-printer-status-icon').classList.remove('printer-status__fixing')
+
+          $('#bw-printer-status-icon').classList.add('printer-status__avaliable')
+          $('#bw-printer-status').innerText = '就绪'
+          break
+        case 'printing':
+          $('#bw-printer-status-icon').classList.remove('printer-status__unavaliable')
+          $('#bw-printer-status-icon').classList.remove('printer-status__avaliable')
+          $('#bw-printer-status-icon').classList.remove('printer-status__fixing')
+
+          $('#bw-printer-status-icon').classList.add('printer-status__busy')
+          $('#bw-printer-status').innerText = '忙碌中'
+          break
+        default:
+        $('#bw-printer-status-icon').classList.remove('printer-status__busy')
+        $('#bw-printer-status-icon').classList.remove('printer-status__avaliable')
+        $('#bw-printer-status-icon').classList.remove('printer-status__fixing')
+
+        $('#bw-printer-status-icon').classList.add('printer-status__unavaliable')
+        $('#bw-printer-status').innerText = '不可用'
+      }
+      
     },
+    /*
     _setColorPrinterStatus(status) {
       $('#color-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
       $('#color-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
       $('#color-printer-status').innerText = status.message === '' ? '就绪' : status.message
-    },
+    }, */
     setPrinterInfo (name, states, description) {
       console.log('setPrinterInfo: status: ', states)
       $('#printer-info').innerText = name
-      this._setBwPrinterStatus(states.bw)
-      this._setColorPrinterStatus(states.colored)
+      this._setBwPrinterStatus(states.bw, states.halted)
+      //this._setColorPrinterStatus(states.colored)
       $('#printer-description').innerText = description
     }
   }
-  printerCard.setPrinterInfo('A printer', {"bw":{"state":"idle","message":""},"colored":{"state":"idle","message":""},"halted":false}, 'This is a printer; I like printers; Printers are good for our health.')
+  printerCard.setPrinterInfo('A printer', {"bw":{"state":"idle","message":""},"colored":{"state":"idle","message":""},"halted":true}, 'This is a printer; I like printers; Printers are good for our health.')
   
   var  priceWarningDialog = new mdc.dialog.MDCDialog($('#recharge-dialog'))
   function popPriceWarning() {
@@ -223,6 +280,9 @@
     $('#alert-message').innerText = message
     alertBox.open()
   }
+  var loadingBox = new mdc.dialog.MDCDialog($('#loading-dialog'))
+  loadingBox.scrimClickAction = loadingBox.escapeKeyAction = ""
+  
 
   var hideUploadField = function() {
     console.log('hideJob')
@@ -233,9 +293,12 @@
     $('#file-zone').classList.remove('invisible')
   }
   var addJob = function (fileName, code, id, config, pageCount) {
+    loadingBox.open()
+    console.log("Trying to add job: ", fileName, code, id, config, pageCount)
     var price = 0
     ;(async ()=>{
-      price = await getPrice(pageCount * config.copies, config.colored)
+      console.log("Getting price: ", config.color)
+      price = await getPrice(pageCount * config.copies, config.color)
       currentStatus.totalCost += price
       if (currentStatus.totalCost > currentStatus.kredit) {
         popPriceWarning()
@@ -246,6 +309,7 @@
         .replace(/::price::/g, price / 100)
         .replace(/::code::/g, code)
       mdc.autoInit.mdcAutoInit()
+
       var withCode = function(value) { return value + '-' + code}
       
       // about info
@@ -253,7 +317,7 @@
       var priceInfo = $(withCode('#price'))
       // about config
       var doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
-      doubleSidedSwitch.checked = config.colored
+      doubleSidedSwitch.checked = config.color
       var colorSwitch = $(withCode('#c-switch')).MDCSwitch
       colorSwitch.checked = config['double-sided']
       var copiesTextfield = $(withCode('#c')).MDCTextField
@@ -268,8 +332,12 @@
 
       deleteJobButton.onclick = function () {
         ;( async() =>{
+          loadingBox.open()
+
           await deleteJob(code)
-          $(withCode('job')).remove()
+          $(withCode('#job')).remove()
+
+          loadingBox.close()
         })()
       }
 
@@ -277,21 +345,23 @@
       $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = function() {
         console.log('Value Changed')
         ;( async() =>{
-          await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value)
+          loadingBox.open()
+          await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value, code)
           temporaryValue = await getPrice(pageCount * copiesTextfield.value, colorSwitch.checked)
           currentStatus.totalCost -= price
           price = temporaryValue
           currentStatus.totalCost += price
-          priceInfo.value = temporaryValue / 100
+          priceInfo.innerText = temporaryValue / 100
           if (currentStatus.totalCost > currentStatus.kredit) {
             popPriceWarning()
           }
+          loadingBox.close()
         })()
         if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
         console.log('Value changed')
       }
-
     })()
+    loadingBox.close()
   }
   //end element control
 
@@ -312,8 +382,9 @@
   var constructEndpointURL = function (route) { return new URL(route, currentPrinter.base) }
 
   var updatePrinter = async function() {
-    // TODO: add DNS stuff
+
     var printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
+
     console.log("Get printer config: ", printerConfigs)
     for(var id in printerConfigs) {
       var ip = printerConfigs[id]
@@ -342,6 +413,7 @@
     
     if (!currentPrinter) {
       // TODO:
+
       console.log("No printers Avaliable")
     }
   }
@@ -365,11 +437,9 @@
     return fetch(constructEndpointURL('/delete-job'), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        token,
-      })
+      body: JSON.stringify(token)
     })
   }
 
@@ -401,7 +471,7 @@
     }).then(res => res.json())
   }
 
-  var updateConfig = async function(id, doubleSided, withColor, copies) {
+  var updateConfig = async function(id, doubleSided, withColor, copies, code) {
     return await fetch(constructEndpointURL('/set-config'), 
       {
         method: 'POST',
@@ -414,13 +484,16 @@
             'copies': copies,
             'color': withColor,
             'double-sided': doubleSided 
-          }
+          },
+          token: await requestJobToken(code)
         })
       }
     ).then(res => res.json())
   }
 
   var uploadFile = async function(fileObject) {
+    loadingBox.open()
+
     var fileForm = new FormData()
     fileForm.append("file", fileObject)
     var token = await createJob()
@@ -432,9 +505,10 @@
       method: 'POST',
       body: fileForm
     }).then(res => res.json()).then(function(response) {
+      loadingBox.close()
       if (response.status === 0) {
         response = response.response
-        addJob(fileObject.name, response.code, response.id, response.config, response["page-count"])
+        addJob(fileObject.name, response.code, response.id, response.config, response['page-count'])
       }
     })
   }
@@ -452,10 +526,11 @@
     var jobInfo = await requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign)
     console.log('Got job info: ', jobInfo)
     if(jobInfo.status === 0) {
-      /* untested */
-      for(var config in jobInfo.response) {
-        addJob('之前的打印任务', config.code, '', config.config, config['page-count'])
+      for(var config of jobInfo.response) {
+        console.log("Loading Job: ", config)
+        addJob(config.file, config.code, '', config.config, config.pageCount)
       }
+      
     }
     if(sessionObject.debt > 0) currentStatus.inDebt = true
     currentStatus.kredit = sessionObject.kredit
@@ -510,9 +585,11 @@
     uploadFile(t)
   })
   ;(async()=>{
+    loadingBox.open()
     await updatePrinter()
     await updatePrinterInfo()
     await updateSession()
+    loadingBox.close()
   })()
 </script>
 {% endblock script%}

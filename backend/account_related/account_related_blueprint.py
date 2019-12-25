@@ -110,6 +110,7 @@ def process_delete_all_codes():
     token = request.cookies.get(CONSTS.TOKEN, '')
     session = get_session_by_token(token)
     session._jobs = []
+    session.save()
     return 'All clear.'
     
 @account_related_blueprint.route(CONSTS.ROUTES.DELETE_JOB_TOKEN, methods = ['GET'])

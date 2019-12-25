@@ -18,8 +18,8 @@ class CONSTS:
     }
     NAME = '登录 Cloud Print'
     # These two are just demo
-    LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Overwatch_circle_logo.svg/600px-Overwatch_circle_logo.svg.png'
-    BACKGROUND_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdREANHAoSAAozc-OTddNReGMM82DBhCmhWXFuKzTREhFw_7MO'
+    LOGO_URL = ServerConfig.public_address + '/static/img/logo.png'
+    BACKGROUND_URL = ServerConfig.public_address + '/static/img/background.webp'
     THEME = 'f57c00'
 class FailedToGetKiuidError(Exception):
     pass

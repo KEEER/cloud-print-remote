@@ -34,7 +34,7 @@ body {
 }
 .printer-card__logo {
     border-radius: 50%;
-    max-width: 30%;
+    max-width: 128px;
     margin: 16px;
     
 }
