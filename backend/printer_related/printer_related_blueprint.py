@@ -65,7 +65,10 @@ def process_print():
     if not payment_result[0]:
         logger.info('Payment failed: %s'%payment_result[1])
         session.add_debt(price)
-
+        return json.dumps({
+            'status': 2,
+            'message': '支付失败'
+        })
     session.remove_job(code)
     return json.dumps({
         'status': 0,

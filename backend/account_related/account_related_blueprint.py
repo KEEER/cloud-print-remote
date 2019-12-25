@@ -20,7 +20,7 @@ class CONSTS:
     class ROUTES:
         REQUEST_JOB_TOKEN = '/_api/job-token'
         REQUEST_SESSION = '/_api/session'
-        DELETE_JOB_TOKEN = '/_api/delete-job'
+        DELETE_JOB_TOKEN = '/_api/delete-job-token'
         LOGIN = '/login'
         INDEX = '/'
         
@@ -95,6 +95,14 @@ def process_request_session():
     jobs = session.get_all_jobs()
     kredit = get_kredit_amount(token)
     timestamp = str(int(time.time()))
+    if session.get_debt() > 0:
+        payment_result = pay(session.get_kiuid(), session.get_debt())
+        
+        if not payment_result[0]:
+            logger.info('Still in debt.')
+        else:
+            session.remove_all_debt()
+
     logger.debug('[in request session] Session=> '+str(session))
     return json.dumps({
         'codes': jobs,

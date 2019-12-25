@@ -181,7 +181,7 @@
       </div>
 
       <div class="mdc-text-field mdc-text-field--outlined copies" id="c-::code::" data-mdc-auto-init="MDCTextField">
-        <input id="copies-::code::" type="number" min="1" max="10" step="1" class="mdc-text-field__input" value="1" required />
+        <input id="copies-::code::" type="number" min="1" step="1" class="mdc-text-field__input" value="1" />
         <div class="mdc-notched-outline mdc-notched-outline--upgraded">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch" style="">
@@ -297,17 +297,20 @@
     console.log("Trying to add job: ", fileName, code, id, config, pageCount)
     var price = 0
     ;(async ()=>{
-      console.log("Getting price: ", config.color)
-      price = await getPrice(pageCount * config.copies, config.color)
+      console.log("Getting price: ", config.colored)
+      price = await getPrice(pageCount * config.copies, config.colored)
       currentStatus.totalCost += price
       if (currentStatus.totalCost > currentStatus.kredit) {
         popPriceWarning()
       }
-      $('#job-list').innerHTML += jobTemplate
+      const el = document.createElement('div')
+      el.classList.add('job-wrapper')
+      el.innerHTML = jobTemplate
         .replace(/::jobTitle::/g, fileName)
         .replace(/::pageNumber::/g, pageCount)
         .replace(/::price::/g, price / 100)
         .replace(/::code::/g, code)
+      $('#job-list').appendChild(el)
       mdc.autoInit.mdcAutoInit()
 
       var withCode = function(value) { return value + '-' + code}
@@ -317,9 +320,9 @@
       var priceInfo = $(withCode('#price'))
       // about config
       var doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
-      doubleSidedSwitch.checked = config.color
+      doubleSidedSwitch.checked = config['double-sided']
       var colorSwitch = $(withCode('#c-switch')).MDCSwitch
-      colorSwitch.checked = config['double-sided']
+      colorSwitch.checked = config.colored
       var copiesTextfield = $(withCode('#c')).MDCTextField
       copiesTextfield.value = config.copies
       // about action
@@ -336,7 +339,7 @@
 
           await deleteJob(code)
           $(withCode('#job')).remove()
-
+          currentStatus.totalCost -= price
           loadingBox.close()
         })()
       }
@@ -346,8 +349,9 @@
         console.log('Value Changed')
         ;( async() =>{
           loadingBox.open()
-          await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, copiesTextfield.value, code)
-          temporaryValue = await getPrice(pageCount * copiesTextfield.value, colorSwitch.checked)
+          console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
+          await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
+          temporaryValue = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
           currentStatus.totalCost -= price
           price = temporaryValue
           currentStatus.totalCost += price
@@ -358,6 +362,10 @@
           loadingBox.close()
         })()
         if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
+        if (copiesTextfield.value * pageCount > 50) {
+
+          copiesTextfield.value = Math.floor(50 / pageCount)
+        }
         console.log('Value changed')
       }
     })()
@@ -439,7 +447,7 @@
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(token)
+      body: JSON.stringify({ token })
     })
   }
 
@@ -482,7 +490,7 @@
           'id': id,
           'config': {
             'copies': copies,
-            'color': withColor,
+            'colored': withColor,
             'double-sided': doubleSided 
           },
           token: await requestJobToken(code)
