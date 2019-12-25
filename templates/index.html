@@ -5,10 +5,23 @@
 {% block stylesheet%}
 <link rel="stylesheet" href="/static/css/index.css" />
 {% endblock stylesheet %}
-
+{% block header%}
+  <span>您的 Kredit 余额<span id="kredit"> ? </span>元</span>
+{% endblock header%}
 {% block content %}
+
   <div class="mdc-card printer-card">
-    <img class="printer-card__logo" src="/static/img/logo.png" />
+    <div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="printer-loading">
+      <div class="mdc-linear-progress__buffering-dots"></div>
+      <div class="mdc-linear-progress__buffer"></div>
+      <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+        <span class="mdc-linear-progress__bar-inner"></span>
+      </div>
+      <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+        <span class="mdc-linear-progress__bar-inner"></span>
+      </div>
+    </div>
+    <img class="printer-card__logo" id="printer-logo" src="/static/img/logo.png" />
     <div class="printer-card__content">
       <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
       <div class="printer-card__status">
@@ -122,20 +135,48 @@
 
   <div class="mdc-dialog"
     id="loading-dialog"
-    role="alertdialog"
+    role="loadingdialog"
     aria-modal="false"
     aria-labelledby="my-dialog-title"
     aria-describedby="my-dialog-content">
     <div class="mdc-dialog__container">
       <div class="mdc-dialog__surface">
         <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
-        <h2 class="mdc-dialog__title" id="my-dialog-title"><!--
+        <h2 class="mdc-dialog__title" id="loading-title"><!--
       -->请稍候…<!--
     --></h2>
         <div class="mdc-dialog__content"> 
           <img src="https://static.wixstatic.com/media/90541a_d3cf42a02fb448a5ad933227b77ff7e8~mv2.gif" />
         </div>
       </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+
+  <div class="mdc-dialog"
+    id="debt-dialog"
+    role="debtdialog"
+    aria-modal="false"
+    aria-labelledby="my-dialog-title"
+    aria-describedby="my-dialog-content">
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="loading-title"><!--
+      -->您有尚未结算的打印金额！<!--
+    --></h2>
+        <div class="mdc-dialog__content"> 
+          <span>请充值以继续使用该服务</span>
+          <p></p>
+          <span>您目前至少需要支付：<span id="debt"></span>元</span>
+        </div>
+        <footer class="mdc-dialog__actions">
+          <a class="mdc-button mdc-dialog__button" href="https://account.keeer.net/recharge">
+            充值
+          </a>
+        </footer>
+      </div>
+      
     </div>
     <div class="mdc-dialog__scrim"></div>
   </div>
@@ -260,7 +301,7 @@
       $('#printer-description').innerText = description
     }
   }
-  printerCard.setPrinterInfo('A printer', {"bw":{"state":"idle","message":""},"colored":{"state":"idle","message":""},"halted":true}, 'This is a printer; I like printers; Printers are good for our health.')
+  
   
   var  priceWarningDialog = new mdc.dialog.MDCDialog($('#recharge-dialog'))
   function popPriceWarning() {
@@ -280,7 +321,21 @@
     alertBox.open()
   }
   var loadingBox = new mdc.dialog.MDCDialog($('#loading-dialog'))
+  var startLoading = function(message) {
+    $('#loading-title').innerText = message
+    loadingBox.open()
+  }
+  var endLoading = function() {
+    loadingBox.close()
+  }
   loadingBox.scrimClickAction = loadingBox.escapeKeyAction = ""
+
+  var debtBox = new mdc.dialog.MDCDialog($('#debt-dialog'))
+  var popDebt = function() {
+    $('#debt').innerText = currentStatus.debt / 100
+    debtBox.open()
+  }
+  debtBox.scrimClickAction = debtBox.escapeKeyAction = ""
   
 
   var hideUploadField = function() {
@@ -292,7 +347,7 @@
     $('#file-zone').classList.remove('invisible')
   }
   var addJob = function (fileName, code, id, config, pageCount) {
-    loadingBox.open()
+    startLoading('创建任务…')
     console.log("Trying to add job: ", fileName, code, id, config, pageCount)
     var price = 0
     ;(async ()=>{
@@ -334,12 +389,12 @@
 
       deleteJobButton.onclick = function () {
         ;( async() =>{
-          loadingBox.open()
+          loadingBox.open('删除中…')
 
           await deleteJob(code)
           $(withCode('#job')).remove()
           currentStatus.totalCost -= price
-          loadingBox.close()
+          endLoading()
         })()
       }
 
@@ -347,7 +402,7 @@
       $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = function() {
         console.log('Value Changed')
         ;( async() =>{
-          loadingBox.open()
+          startLoading('更新打印配置…')
           console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
           await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
           temporaryValue = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
@@ -358,7 +413,7 @@
           if (currentStatus.totalCost > currentStatus.kredit) {
             popPriceWarning()
           }
-          loadingBox.close()
+          endLoading()
         })()
         if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
         if (copiesTextfield.value * pageCount > 50) {
@@ -368,7 +423,7 @@
         console.log('Value changed')
       }
     })()
-    loadingBox.close()
+    endLoading()
   }
   //end element control
 
@@ -376,30 +431,42 @@
     "codes": [],
     "kredit": 0,
     totalCost: 0,
-    "inDebt": false
+    debt: 0
   }
   var currentPrinter = {
     "id": 255,
     "ip": '0.0.0.0',
     "avaliable": true,
-    "name": 'A printer',
-    "description": 'This is a printer; I like printers; Printers are good for our health.',
-    base: new URL('http://0.0.0.0/'),
+    "name": '等待数据',
+    "description": '等待数据。请确保您已经连接到学校的 WIFI',
+    base: null,
   };
+  printerCard.setPrinterInfo(currentPrinter.name, {"bw":{"state":"unavaliable","message":""},"colored":{"state":"idle","message":""},"halted":false}, currentPrinter.description)
   var constructEndpointURL = function (route) { return new URL(route, currentPrinter.base) }
 
-  var updatePrinter = async function() {
-
+  var updatePrinter = async function(silent) {
+    if(!silent) startLoading('搜索局域网内的打印终端…')
     var printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
 
     console.log("Get printer config: ", printerConfigs)
-    for(var id in printerConfigs) {
+    console.log(Object.keys(printerConfigs))
+    for(var id of Object.keys(printerConfigs)) {
       var ip = printerConfigs[id]
+      if(!silent) startLoading('尝试连接到打印机：#' + id)
+      else {
+        $('#printer-loading').style.display = 'block'
+      }
       const base = new URL(`https://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
       console.log("Trying printer id: ", id)
     
       try {
-        const res = await fetch(new URL('/status', base)).then(res => res.json())
+        const res = await new Promise( function(resolve, reject) {
+          const timeout = setTimeout(function(){
+            reject(new Error('Timeout.'))
+          }, 1000)
+          fetch(new URL('/status', base),{method: 'GET'}, 1).then(function(resp){resolve(resp)})
+        }).then(res => res.json())
+        
         if (res.status !== 0) throw res
         const config = res.response
         currentPrinter = {
@@ -415,14 +482,18 @@
         break
       } catch (e) {
         console.log('Failed.', e)
+        continue
       }
     }
-    
-    if (!currentPrinter) {
-      // TODO:
-
+    $('#printer-logo').src="/static/img/logo.png"
+    if (currentPrinter.base === null) {
+      $('#printer-logo').src="/static/img/NotConnected.png"
+      
       console.log("No printers Avaliable")
+
     }
+    endLoading()
+    $('#printer-loading').style.display = 'none'
   }
 
   var updatePrinterInfo = async function() {
@@ -434,7 +505,7 @@
       currentPrinter.status = config.status
     } catch(e) {
       console.log("Network Changed: ", e)
-      updatePrinter()
+      updatePrinter(true)
     }
     printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
   }
@@ -499,7 +570,7 @@
   }
 
   var uploadFile = async function(fileObject) {
-    loadingBox.open()
+    startLoading('上传文件中…')
 
     var fileForm = new FormData()
     fileForm.append("file", fileObject)
@@ -512,7 +583,7 @@
       method: 'POST',
       body: fileForm
     }).then(res => res.json()).then(function(response) {
-      loadingBox.close()
+      endLoading()
       if (response.status === 0) {
         response = response.response
         addJob(fileObject.name, response.code, response.id, response.config, response['page-count'])
@@ -528,20 +599,27 @@
   }
 
   var updateSession = async function() {
+    startLoading('获取数据…')
     var sessionObject = await getSession()
     // get job info
-    var jobInfo = await requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign)
-    console.log('Got job info: ', jobInfo)
-    if(jobInfo.status === 0) {
-      for(var config of jobInfo.response) {
-        console.log("Loading Job: ", config)
-        addJob(config.file, config.code, '', config.config, config.pageCount)
+    if (currentPrinter.base !== null) {
+      var jobInfo = await requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign)
+      console.log('Got job info: ', jobInfo)
+      if(jobInfo.status === 0) {
+        for(var config of jobInfo.response) {
+          console.log("Loading Job: ", config)
+          addJob(config.file, config.code, '', config.config, config.pageCount)
+        }
       }
-      
     }
-    if(sessionObject.debt > 0) currentStatus.inDebt = true
+    if(sessionObject.debt > 0) {
+      currentStatus.debt = sessionObject.debt
+      popDebt()
+    }
     currentStatus.kredit = sessionObject.kredit
+    $('#kredit').innerText = Number(currentStatus.kredit) / 100
     currentStatus.codes = sessionObject.codes
+    endLoading()
   }
 
   const dragAndDropZone = document.getElementById('file-zone')
@@ -592,11 +670,20 @@
     uploadFile(t)
   })
   ;(async()=>{
-    loadingBox.open()
-    await updatePrinter()
-    await updatePrinterInfo()
+    
+    await updatePrinter(false)
+
     await updateSession()
-    loadingBox.close()
+    setInterval(function() {
+      ;(async() =>{
+         await updatePrinterInfo()
+      })()
+    }, 10000)
+    setInterval(function() {
+      ;(async() =>{
+         await updateSession()
+      })()
+    }, 30000)
   })()
 </script>
 {% endblock script%}
