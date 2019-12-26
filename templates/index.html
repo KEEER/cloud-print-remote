@@ -389,7 +389,7 @@
 
       deleteJobButton.onclick = function () {
         ;( async() =>{
-          loadingBox.open('删除中…')
+          startLoading('删除中…')
 
           await deleteJob(code)
           $(withCode('#job')).remove()
@@ -608,7 +608,9 @@
       if(jobInfo.status === 0) {
         for(var config of jobInfo.response) {
           console.log("Loading Job: ", config)
-          addJob(config.file, config.code, '', config.config, config.pageCount)
+          // detect whether the job exists
+          if($('#job-'+ config.code) === null)
+            addJob(config.file, config.code, '', config.config, config.pageCount)
         }
       }
     }
