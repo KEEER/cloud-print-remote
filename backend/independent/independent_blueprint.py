@@ -25,7 +25,10 @@ def process_calculate_price():
 	logger.debug('Config: '+ str(config))
 	price = calculate_price(config, printer)
 	if price < 0:
-		return CONSTS.INVALID_FORM
+		return json.dumps({
+			'status': 1,
+			'result': '不合理的打印配置'
+		})
 	else:
 		return json.dumps({
 			'status': 0,

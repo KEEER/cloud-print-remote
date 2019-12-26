@@ -59,7 +59,8 @@ def process_print():
                 'withDebt': True,
                 'kiuid': session.get_kiuid(),
                 'code': code,
-                'config': None
+                'config': None,
+                'price': None
             }))
 
             return json.dumps({
@@ -84,7 +85,8 @@ def process_print():
                 'withDebt': True,
                 'kiuid': session.get_kiuid(),
                 'code': code,
-                'config': config
+                'config': config,
+                'price': price
             }))
         return json.dumps({
             'status': 2,
@@ -98,7 +100,8 @@ def process_print():
                 'withDebt': False,
                 'kiuid': session.get_kiuid(),
                 'code': code,
-                'config': config
+                'config': config,
+                'price': price
             }))
 
     return json.dumps({
@@ -150,7 +153,7 @@ def UpdatePrinterIP():
         'ip': ipa,
         'id': ida
     }))
-    
+
     return json.dumps({
         'status': 0,
         'message': 'ok.'
