@@ -17,7 +17,10 @@ initialize_logging_module()
 # don't use __name__ for this one, but for ALL others
 main_logger = logging.getLogger('main')
 
+from utils.json_logger import JSONLogger
 
+lgr = JSONLogger('logs/print_data.log')
+lgr.write({'use': False})
 if __name__ == '__main__':
     
     server = Flask(__name__)

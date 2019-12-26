@@ -4,6 +4,7 @@ from backend.account_related.session_manager import get_session_by_token, get_se
 from utils.kas_manager import pay, login, token_is_valid, get_kredit_amount
 from utils.security import secured_sign, verify
 from config import ServerConfig
+from utils.json_logger import JSONLogger
 # [Python native modules]
 import logging
 import json
@@ -27,6 +28,10 @@ class CONSTS:
 
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
 logger = logging.getLogger(__name__)
+
+account_logger = JSONLogger('logs/account.log')
+
+job_logger = JSONLogger('logs/job.log')
 
 @account_related_blueprint.route(CONSTS.ROUTES.LOGIN, methods = ['GET'])
 def index():
@@ -105,6 +110,14 @@ def process_request_session():
             session.remove_all_debt()
 
     logger.debug('[in request session] Session=> '+str(session))
+
+    account_logger.write(json.dumps({
+        'time': time.time(),
+        'kredit': kredit,
+        'debt': session.get_debt(),
+        'kiuid': session.get_kiuid()
+    }))
+
     return json.dumps({
         'codes': jobs,
         'kredit': kredit,
@@ -150,6 +163,11 @@ def process_delete_job_token():
             'status': 1,
             'message': 'code does not exist'
         })
+    job_logger.write(json.dumps({
+        'time': time.time(),
+        'code': code,
+        'kiuid': session.get_kiuid()
+    }))
     return json.dumps({
             'status': 0,
             'message': 'code removed'

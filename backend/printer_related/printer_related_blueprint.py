@@ -3,6 +3,7 @@ from backend.account_related.session_manager import get_session_by_code
 from utils.security import secured_sign, verify
 from backend.independent.price_calculation import calculate_price
 from utils.kas_manager import pay
+from utils.json_logger import JSONLogger
 # [Python native modules]
 import logging
 import json
@@ -13,6 +14,8 @@ import time
 from flask import Blueprint, request
 
 logger = logging.getLogger(__name__)
+print_task_logger = JSONLogger('logs/print_task.log')
+endpoint_status_logger = JSONLogger('logs/endpoint.log')
 class CONSTS:
     class ROUTES:
         REQUEST_GET_IPS_TOKEN='/_api/printer-ips'
@@ -42,6 +45,7 @@ def process_print():
         return 'Wrong Signature', 401
     config = json.loads(config)
     session = get_session_by_code(code)
+
     if session.get_debt() > 0:
         pay_result = pay(session.get_kiuid(), session.get_debt())
         if pay_result[0]:
@@ -49,6 +53,15 @@ def process_print():
             session.remove_all_debt()
         else:
             # TODO: maybe add a record
+            print_task_logger.write(json.dumps({
+                'time': time.time(),
+                'success': False,
+                'withDebt': True,
+                'kiuid': session.get_kiuid(),
+                'code': code,
+                'config': None
+            }))
+
             return json.dumps({
                 'status': 1,
                 'message': 'Payment Failed: this user has debt'
@@ -63,13 +76,31 @@ def process_print():
     payment_result = pay(kiuid, price)
     
     if not payment_result[0]:
-        logger.info('Payment failed: %s'%payment_result[1])
+        logger.info('Payment failed: %s' % payment_result[1])
         session.add_debt(price)
+        print_task_logger.write(json.dumps({
+                'time': time.time(),
+                'success': True,
+                'withDebt': True,
+                'kiuid': session.get_kiuid(),
+                'code': code,
+                'config': config
+            }))
         return json.dumps({
             'status': 2,
             'message': '支付失败'
         })
     session.remove_job(code)
+
+    print_task_logger.write(json.dumps({
+                'time': time.time(),
+                'success': True,
+                'withDebt': False,
+                'kiuid': session.get_kiuid(),
+                'code': code,
+                'config': config
+            }))
+
     return json.dumps({
         'status': 0,
         'message': 'ok.'
@@ -113,7 +144,13 @@ def UpdatePrinterIP():
         pickle.dump(current_db,pkl_file)
         pkl_file.flush()
         pkl_file.close()
-        
+
+    endpoint_status_logger.write(json.dumps({
+        'time': time.time(),
+        'ip': ipa,
+        'id': ida
+    }))
+    
     return json.dumps({
         'status': 0,
         'message': 'ok.'
@@ -129,4 +166,5 @@ def StatusReport():
 
     nowtime = time.strftime('%Y.%m.%d',time.localtime(time.time()))
     readableMessage = toReadableMessage.safe_substitute(time = nowtime, name = response['name'], geolocation = response['geolocation'], message = response['message'])
+    logger.error(readableMessage)
     # TODO: Call maintainer
