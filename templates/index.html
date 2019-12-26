@@ -9,18 +9,17 @@
   <span>您的 Kredit 余额<span id="kredit"> ? </span>元</span>
 {% endblock header%}
 {% block content %}
-
+<div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="printer-loading">
+  <div class="mdc-linear-progress__buffering-dots"></div>
+  <div class="mdc-linear-progress__buffer"></div>
+  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+    <span class="mdc-linear-progress__bar-inner"></span>
+  </div>
+  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+    <span class="mdc-linear-progress__bar-inner"></span>
+  </div>
+</div>
   <div class="mdc-card printer-card">
-    <div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="printer-loading">
-      <div class="mdc-linear-progress__buffering-dots"></div>
-      <div class="mdc-linear-progress__buffer"></div>
-      <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
-        <span class="mdc-linear-progress__bar-inner"></span>
-      </div>
-      <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
-        <span class="mdc-linear-progress__bar-inner"></span>
-      </div>
-    </div>
     <img class="printer-card__logo" id="printer-logo" src="/static/img/logo.png" />
     <div class="printer-card__content">
       <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
@@ -454,7 +453,7 @@
       var ip = printerConfigs[id]
       if(!silent) startLoading('尝试连接到打印机：#' + id)
       else {
-        $('#printer-loading').style.display = 'block'
+        $('#printer-loading').style.opacity = 1
       }
       const base = new URL(`https://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
       console.log("Trying printer id: ", id)
@@ -463,7 +462,7 @@
         const res = await new Promise( function(resolve, reject) {
           const timeout = setTimeout(function(){
             reject(new Error('Timeout.'))
-          }, 1000)
+          }, 1500)
           fetch(new URL('/status', base),{method: 'GET'}, 1).then(function(resp){resolve(resp)})
         }).then(res => res.json())
         
@@ -493,7 +492,7 @@
 
     }
     endLoading()
-    $('#printer-loading').style.display = 'none'
+    $('#printer-loading').style.opacity = 0
   }
 
   var updatePrinterInfo = async function() {
@@ -680,7 +679,7 @@
       ;(async() =>{
          await updatePrinterInfo()
       })()
-    }, 10000)
+    }, 5000)
     setInterval(function() {
       ;(async() =>{
          await updateSession()
