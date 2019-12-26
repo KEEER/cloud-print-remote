@@ -675,7 +675,7 @@
     
     await updatePrinter(false)
 
-    await updateSession()
+    await updateSession(false)
     setInterval(function() {
       ;(async() =>{
          await updatePrinterInfo()
@@ -683,7 +683,7 @@
     }, 10000)
     setInterval(function() {
       ;(async() =>{
-         await updateSession()
+         await updateSession(true)
       })()
     }, 30000)
   })()
