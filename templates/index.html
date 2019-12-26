@@ -440,7 +440,6 @@
     "description": '等待数据。请确保您已经连接到学校的 WIFI',
     base: null,
   };
-  printerCard.setPrinterInfo(currentPrinter.name, {"bw":{"state":"unavaliable","message":""},"colored":{"state":"idle","message":""},"halted":false}, currentPrinter.description)
   var constructEndpointURL = function (route) { return new URL(route, currentPrinter.base) }
 
   var updatePrinter = async function(silent) {
@@ -452,9 +451,6 @@
     for(var id of Object.keys(printerConfigs)) {
       var ip = printerConfigs[id]
       if(!silent) startLoading('尝试连接到打印机：#' + id)
-      else {
-        $('#printer-loading').style.opacity = 1
-      }
       const base = new URL(`https://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
       console.log("Trying printer id: ", id)
     
@@ -487,26 +483,29 @@
     $('#printer-logo').src="/static/img/logo.png"
     if (currentPrinter.base === null) {
       $('#printer-logo').src="/static/img/NotConnected.png"
-      
+      printerCard.setPrinterInfo('等待数据', {"bw":{"state":"unavaliable","message":""},"colored":{"state":"idle","message":""},"halted":false}, '等待数据。请确保您已经连接到学校的 WIFI')
       console.log("No printers Avaliable")
 
     }
     endLoading()
-    $('#printer-loading').style.opacity = 0
+    
   }
 
   var updatePrinterInfo = async function() {
     try {
+      $('#printer-loading').style.opacity = 1
       var res = await fetch(constructEndpointURL('/status')).then(res => res.json())
       if (res.status !== 0) throw res
       const config = res.response
       currentPrinter.description = config.message
       currentPrinter.status = config.status
+      printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
     } catch(e) {
       console.log("Network Changed: ", e)
-      updatePrinter(true)
+      await updatePrinter(true)
+    } finally {
+      $('#printer-loading').style.opacity = 0
     }
-    printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
   }
 
   var deleteJob = async function(code) {
@@ -679,7 +678,7 @@
       ;(async() =>{
          await updatePrinterInfo()
       })()
-    }, 5000)
+    }, 10000)
     setInterval(function() {
       ;(async() =>{
          await updateSession()
