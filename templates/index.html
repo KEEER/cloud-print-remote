@@ -9,7 +9,7 @@
   <span>您的 Kredit 余额<span id="kredit"> ? </span>元</span>
 {% endblock header%}
 {% block content %}
-<div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="printer-loading">
+<div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="linear-loading-progress">
   <div class="mdc-linear-progress__buffering-dots"></div>
   <div class="mdc-linear-progress__buffer"></div>
   <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
@@ -493,7 +493,7 @@
 
   var updatePrinterInfo = async function() {
     try {
-      $('#printer-loading').style.opacity = 1
+      $('#linear-loading-progress').style.opacity = 1
       var res = await fetch(constructEndpointURL('/status')).then(res => res.json())
       if (res.status !== 0) throw res
       const config = res.response
@@ -504,7 +504,7 @@
       console.log("Network Changed: ", e)
       await updatePrinter(true)
     } finally {
-      $('#printer-loading').style.opacity = 0
+      $('#linear-loading-progress').style.opacity = 0
     }
   }
 
@@ -596,8 +596,9 @@
     return await fetch('/_api/session').then(res => res.json())
   }
 
-  var updateSession = async function() {
-    startLoading('获取数据…')
+  var updateSession = async function(silent) {
+    if(!silent) startLoading('获取数据…')
+    else $("#linear-loading-progress").style.opacity = 1
     var sessionObject = await getSession()
     // get job info
     if (currentPrinter.base !== null) {
@@ -619,7 +620,8 @@
     currentStatus.kredit = sessionObject.kredit
     $('#kredit').innerText = Number(currentStatus.kredit) / 100
     currentStatus.codes = sessionObject.codes
-    endLoading()
+    if(!silent) endLoading()
+    else $("#linear-loading-progress").style.opacity = 0
   }
 
   const dragAndDropZone = document.getElementById('file-zone')
