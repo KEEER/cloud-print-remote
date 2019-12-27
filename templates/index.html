@@ -405,7 +405,7 @@
           startLoading('更新打印配置…')
           console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
           await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
-          temporaryValue = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
+          var temporaryValue = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
           currentStatus.totalCost -= price
           price = temporaryValue
           currentStatus.totalCost += price
