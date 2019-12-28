@@ -320,7 +320,7 @@ function () {
                       id = _Object$keys[_i];
                       ip = printerConfigs[id];
                       if (!silent) startLoading('尝试连接到打印机：#' + id);
-                      base = new URL("http://".concat(ip.replace(/\./g, '-'), ".ip.kcps.monster:8080"));
+                      base = new URL("https://".concat(ip.replace(/\./g, '-'), ".ip.kcps.monster"));
                       console.log('Trying printer id: ', id);
                       _context4.prev = 5;
                       _context4.next = 8;
