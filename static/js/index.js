@@ -1,0 +1,1018 @@
+'use strict';
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+var $ = function $(sel) {
+  return document.querySelector(sel);
+};
+
+var MAX_JOB_NUMBER = 1;
+var jobTemplate = $('#jobTemplate').innerHTML;
+mdc.autoInit.mdcAutoInit.register('MDCTextField', mdc.textfield.MDCTextField);
+mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTextFieldHelperText);
+mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc["switch"].MDCSwitch);
+var bwStatusIconEl = $('#bw-printer-status-icon');
+var bwStatusEl = $('#bw-printer-status');
+$('#bw-printer-status'); // [element control]
+
+var printerCard = {
+  _setBwPrinterStatus: function _setBwPrinterStatus(status, isHalted) {
+    if (isHalted) {
+      bwStatusIconEl.classList.remove('printer-status__unavaliable');
+      bwStatusIconEl.classList.remove('printer-status__busy');
+      bwStatusIconEl.classList.remove('printer-status__avaliable');
+      bwStatusIconEl.classList.add('printer-status__fixing');
+      bwStatusEl.innerText = '维修或调试中';
+      return;
+    }
+
+    switch (status.state) {
+      case 'idle':
+        bwStatusIconEl.classList.remove('printer-status__unavaliable');
+        bwStatusIconEl.classList.remove('printer-status__busy');
+        bwStatusIconEl.classList.remove('printer-status__fixing');
+        bwStatusIconEl.classList.add('printer-status__avaliable');
+        bwStatusEl.innerText = '就绪';
+        break;
+
+      case 'printing':
+        bwStatusIconEl.classList.remove('printer-status__unavaliable');
+        bwStatusIconEl.classList.remove('printer-status__avaliable');
+        bwStatusIconEl.classList.remove('printer-status__fixing');
+        bwStatusIconEl.classList.add('printer-status__busy');
+        bwStatusEl.innerText = '忙碌中';
+        break;
+
+      default:
+        bwStatusIconEl.classList.remove('printer-status__busy');
+        bwStatusIconEl.classList.remove('printer-status__avaliable');
+        bwStatusIconEl.classList.remove('printer-status__fixing');
+        bwStatusIconEl.classList.add('printer-status__unavaliable');
+        bwStatusEl.innerText = '不可用';
+    }
+  },
+
+  /*
+  _setColorPrinterStatus(status) {
+    $('#color-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
+    $('#color-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
+    $('#color-printer-status').innerText = status.message === '' ? '就绪' : status.message
+  }, */
+  setPrinterInfo: function setPrinterInfo(name, states, description) {
+    console.log('setPrinterInfo: status: ', states);
+    $('#printer-info').innerText = name;
+
+    this._setBwPrinterStatus(states.bw, states.halted); //this._setColorPrinterStatus(states.colored)
+
+
+    $('#printer-description').innerText = description;
+  }
+};
+var priceWarningDialog = new mdc.dialog.MDCDialog($('#recharge-dialog'));
+
+function popPriceWarning() {
+  $('#total-price').innerText = currentStatus.totalCost / 100;
+  $('#total-kredit').innerText = currentStatus.kredit / 100;
+  priceWarningDialog.open();
+}
+
+var dialogBox = new mdc.dialog.MDCDialog($('#go-print-dialog'));
+
+function popDialog(jobCode) {
+  $('#print-code').innerText = jobCode;
+  dialogBox.open();
+}
+
+var alertBox = new mdc.dialog.MDCDialog($('#alert-dialog'));
+
+function popAlert(message) {
+  $('#alert-message').innerText = message;
+  alertBox.open();
+}
+
+var loadingBox = new mdc.dialog.MDCDialog($('#loading-dialog'));
+
+var startLoading = function startLoading(message) {
+  $('#loading-title').innerText = message;
+  loadingBox.open();
+};
+
+var endLoading = function endLoading() {
+  loadingBox.close();
+};
+
+loadingBox.scrimClickAction = loadingBox.escapeKeyAction = '';
+var debtBox = new mdc.dialog.MDCDialog($('#debt-dialog'));
+
+var popDebt = function popDebt() {
+  $('#debt').innerText = currentStatus.debt / 100;
+  debtBox.open();
+};
+
+debtBox.scrimClickAction = debtBox.escapeKeyAction = '';
+
+var hideUploadField = function hideUploadField() {
+  console.log('hideJob');
+  $('#file-zone').classList.add('invisible');
+};
+
+var showUploadField = function showUploadField() {
+  console.log('showJob');
+  $('#file-zone').classList.remove('invisible');
+};
+
+var addJob = function addJob(fileName, code, id, config, pageCount) {
+  startLoading('创建任务…');
+  console.log('Trying to add job: ', fileName, code, id, config, pageCount);
+  var price = 0;
+
+  _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee3() {
+    var el, withCode, pageNumberInfo, priceInfo, doubleSidedSwitch, colorSwitch, copiesTextfield, printButton, deleteJobButton;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            console.log('Getting price: ', config.colored);
+            _context3.next = 3;
+            return getPrice(pageCount * config.copies, config.colored);
+
+          case 3:
+            price = _context3.sent;
+            currentStatus.totalCost += price;
+
+            if (currentStatus.totalCost > currentStatus.kredit) {
+              popPriceWarning();
+            }
+
+            el = document.createElement('div');
+            el.classList.add('job-wrapper');
+            el.innerHTML = jobTemplate.replace(/::jobTitle::/g, fileName).replace(/::pageNumber::/g, pageCount).replace(/::price::/g, price / 100).replace(/::code::/g, code);
+            $('#job-list').appendChild(el);
+            mdc.autoInit.mdcAutoInit();
+
+            withCode = function withCode(value) {
+              return value + '-' + code;
+            }; // about info
+
+
+            pageNumberInfo = $(withCode('#page-number'));
+            priceInfo = $(withCode('#price')); // about config
+
+            doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch;
+            doubleSidedSwitch.checked = config['double-sided'];
+            colorSwitch = $(withCode('#c-switch')).MDCSwitch;
+            colorSwitch.checked = config.colored;
+            copiesTextfield = $(withCode('#c')).MDCTextField;
+            copiesTextfield.value = config.copies; // about action
+
+            printButton = $(withCode('#go-print'));
+            deleteJobButton = $(withCode('#delete-job'));
+
+            printButton.onclick = function () {
+              popDialog(code);
+            };
+
+            deleteJobButton.onclick = function () {
+              ;
+
+              _asyncToGenerator(
+              /*#__PURE__*/
+              regeneratorRuntime.mark(function _callee() {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        startLoading('删除中…');
+                        _context.next = 3;
+                        return deleteJob(code);
+
+                      case 3:
+                        $(withCode('#job')).remove();
+                        currentStatus.totalCost -= price;
+                        endLoading();
+
+                      case 6:
+                      case "end":
+                        return _context.stop();
+                    }
+                  }
+                }, _callee);
+              }))();
+            };
+
+            console.log('log elements: ', doubleSidedSwitch, colorSwitch, copiesTextfield);
+
+            $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = function () {
+              console.log('Value Changed');
+
+              _asyncToGenerator(
+              /*#__PURE__*/
+              regeneratorRuntime.mark(function _callee2() {
+                var temporaryValue;
+                return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                  while (1) {
+                    switch (_context2.prev = _context2.next) {
+                      case 0:
+                        startLoading('更新打印配置…');
+                        console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code);
+                        _context2.next = 4;
+                        return updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code);
+
+                      case 4:
+                        _context2.next = 6;
+                        return getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked);
+
+                      case 6:
+                        temporaryValue = _context2.sent;
+                        currentStatus.totalCost -= price;
+                        price = temporaryValue;
+                        currentStatus.totalCost += price;
+                        priceInfo.innerText = temporaryValue / 100;
+
+                        if (currentStatus.totalCost > currentStatus.kredit) {
+                          popPriceWarning();
+                        }
+
+                        endLoading();
+
+                      case 13:
+                      case "end":
+                        return _context2.stop();
+                    }
+                  }
+                }, _callee2);
+              }))();
+
+              if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value = 1;
+
+              if (copiesTextfield.value * pageCount > 50) {
+                copiesTextfield.value = Math.floor(50 / pageCount);
+              }
+
+              console.log('Value changed');
+            };
+
+          case 26:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }))();
+
+  endLoading();
+}; //end element control
+
+
+var currentStatus = {
+  codes: [],
+  kredit: 0,
+  totalCost: 0,
+  debt: 0
+};
+var currentPrinter = {
+  id: 255,
+  ip: '0.0.0.0',
+  avaliable: true,
+  name: '等待数据',
+  description: '等待数据。请确保您已经连接到学校的 WIFI',
+  base: null
+};
+
+var constructEndpointURL = function constructEndpointURL(route) {
+  return new URL(route, currentPrinter.base);
+};
+
+var updatePrinter =
+/*#__PURE__*/
+function () {
+  var _ref4 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee4(silent) {
+    var printerConfigs, _loop2, _i, _Object$keys, _ret;
+
+    return regeneratorRuntime.wrap(function _callee4$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            if (!silent) startLoading('搜索局域网内的打印终端…');
+            _context5.next = 3;
+            return fetch('/_api/printer-ips').then(function (res) {
+              return res.json();
+            });
+
+          case 3:
+            printerConfigs = _context5.sent;
+            console.log('Get printer config: ', printerConfigs);
+            console.log(Object.keys(printerConfigs));
+            _loop2 =
+            /*#__PURE__*/
+            regeneratorRuntime.mark(function _loop2() {
+              var id, ip, base, res, config;
+              return regeneratorRuntime.wrap(function _loop2$(_context4) {
+                while (1) {
+                  switch (_context4.prev = _context4.next) {
+                    case 0:
+                      id = _Object$keys[_i];
+                      ip = printerConfigs[id];
+                      if (!silent) startLoading('尝试连接到打印机：#' + id);
+                      base = new URL("https://".concat(ip.replace(/\./g, '-'), ".ip.kcps.monster"));
+                      console.log('Trying printer id: ', id);
+                      _context4.prev = 5;
+                      _context4.next = 8;
+                      return new Promise(function (resolve, reject) {
+                        setTimeout(function () {
+                          reject(new Error('Timeout.'));
+                        }, 1500);
+                        fetch(new URL('/status', base), {
+                          method: 'GET'
+                        }, 1).then(function (resp) {
+                          resolve(resp);
+                        });
+                      }).then(function (res) {
+                        return res.json();
+                      });
+
+                    case 8:
+                      res = _context4.sent;
+
+                      if (!(res.status !== 0)) {
+                        _context4.next = 11;
+                        break;
+                      }
+
+                      throw res;
+
+                    case 11:
+                      config = res.response;
+                      currentPrinter = {
+                        id: id,
+                        ip: ip,
+                        status: config.status,
+                        name: config.name,
+                        description: config.message,
+                        base: base
+                      };
+                      console.log('Status: ', config);
+                      printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description);
+                      return _context4.abrupt("return", "break");
+
+                    case 18:
+                      _context4.prev = 18;
+                      _context4.t0 = _context4["catch"](5);
+                      console.log('Failed.', _context4.t0);
+                      return _context4.abrupt("return", "continue");
+
+                    case 22:
+                    case "end":
+                      return _context4.stop();
+                  }
+                }
+              }, _loop2, null, [[5, 18]]);
+            });
+            _i = 0, _Object$keys = Object.keys(printerConfigs);
+
+          case 8:
+            if (!(_i < _Object$keys.length)) {
+              _context5.next = 19;
+              break;
+            }
+
+            return _context5.delegateYield(_loop2(), "t0", 10);
+
+          case 10:
+            _ret = _context5.t0;
+            _context5.t1 = _ret;
+            _context5.next = _context5.t1 === "break" ? 14 : _context5.t1 === "continue" ? 15 : 16;
+            break;
+
+          case 14:
+            return _context5.abrupt("break", 19);
+
+          case 15:
+            return _context5.abrupt("continue", 16);
+
+          case 16:
+            _i++;
+            _context5.next = 8;
+            break;
+
+          case 19:
+            $('#printer-logo').src = '/static/img/logo.png';
+
+            if (currentPrinter.base === null) {
+              $('#printer-logo').src = '/static/img/NotConnected.png';
+              printerCard.setPrinterInfo('等待数据', {
+                bw: {
+                  state: 'unavaliable',
+                  message: ''
+                },
+                colored: {
+                  state: 'idle',
+                  message: ''
+                },
+                halted: false
+              }, '等待数据。请确保您已经连接到学校的 WIFI');
+              console.log('No printers Avaliable');
+            }
+
+            endLoading();
+
+          case 22:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee4);
+  }));
+
+  return function updatePrinter(_x) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+var updatePrinterInfo =
+/*#__PURE__*/
+function () {
+  var _ref5 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee5() {
+    var res, config;
+    return regeneratorRuntime.wrap(function _callee5$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            _context6.prev = 0;
+            $('#linear-loading-progress').style.opacity = 1;
+            _context6.next = 4;
+            return fetch(constructEndpointURL('/status')).then(function (res) {
+              return res.json();
+            });
+
+          case 4:
+            res = _context6.sent;
+
+            if (!(res.status !== 0)) {
+              _context6.next = 7;
+              break;
+            }
+
+            throw res;
+
+          case 7:
+            config = res.response;
+            currentPrinter.description = config.message;
+            currentPrinter.status = config.status;
+            printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description);
+            _context6.next = 18;
+            break;
+
+          case 13:
+            _context6.prev = 13;
+            _context6.t0 = _context6["catch"](0);
+            console.log('Network Changed: ', _context6.t0);
+            _context6.next = 18;
+            return updatePrinter(true);
+
+          case 18:
+            _context6.prev = 18;
+            $('#linear-loading-progress').style.opacity = 0;
+            return _context6.finish(18);
+
+          case 21:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee5, null, [[0, 13, 18, 21]]);
+  }));
+
+  return function updatePrinterInfo() {
+    return _ref5.apply(this, arguments);
+  };
+}();
+
+var deleteJob =
+/*#__PURE__*/
+function () {
+  var _ref6 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee6(code) {
+    var token;
+    return regeneratorRuntime.wrap(function _callee6$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            _context7.next = 2;
+            return requestJobToken(code);
+
+          case 2:
+            token = _context7.sent;
+            return _context7.abrupt("return", fetch(constructEndpointURL('/delete-job'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                token: token
+              })
+            }));
+
+          case 4:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee6);
+  }));
+
+  return function deleteJob(_x2) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+
+var createJob =
+/*#__PURE__*/
+function () {
+  var _ref7 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee7() {
+    return regeneratorRuntime.wrap(function _callee7$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            _context8.next = 2;
+            return fetch('/_api/job-token').then(function (res) {
+              return res.json();
+            });
+
+          case 2:
+            return _context8.abrupt("return", _context8.sent);
+
+          case 3:
+          case "end":
+            return _context8.stop();
+        }
+      }
+    }, _callee7);
+  }));
+
+  return function createJob() {
+    return _ref7.apply(this, arguments);
+  };
+}();
+
+var requestJobToken =
+/*#__PURE__*/
+function () {
+  var _ref8 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee8(code) {
+    return regeneratorRuntime.wrap(function _callee8$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            _context9.next = 2;
+            return fetch("/_api/job-token?code=".concat(code)).then(function (res) {
+              return res.json();
+            });
+
+          case 2:
+            return _context9.abrupt("return", _context9.sent);
+
+          case 3:
+          case "end":
+            return _context9.stop();
+        }
+      }
+    }, _callee8);
+  }));
+
+  return function requestJobToken(_x3) {
+    return _ref8.apply(this, arguments);
+  };
+}();
+
+var getPrice =
+/*#__PURE__*/
+function () {
+  var _ref9 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee9(pageCount, colored) {
+    return regeneratorRuntime.wrap(function _callee9$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            console.log("/_api/calculate-price?config={\"page-count\":".concat(pageCount, ",\"colored\":").concat(colored, "}&printer_id=").concat(currentPrinter.id));
+            _context10.next = 3;
+            return fetch("/_api/calculate-price?config={\"page-count\":".concat(pageCount, ",\"colored\":").concat(colored, "}&printer_id=").concat(currentPrinter.id)).then(function (res) {
+              return res.json();
+            }).then(function (response) {
+              if (response.status === 0) return response.result;
+              console.log('Error: ', response);
+            });
+
+          case 3:
+            return _context10.abrupt("return", _context10.sent);
+
+          case 4:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee9);
+  }));
+
+  return function getPrice(_x4, _x5) {
+    return _ref9.apply(this, arguments);
+  };
+}();
+
+var requestAllInfo =
+/*#__PURE__*/
+function () {
+  var _ref10 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee10(codes, timestamp, sign) {
+    return regeneratorRuntime.wrap(function _callee10$(_context11) {
+      while (1) {
+        switch (_context11.prev = _context11.next) {
+          case 0:
+            _context11.next = 2;
+            return fetch(constructEndpointURL('/get-configs'), {
+              method: 'post',
+              body: JSON.stringify({
+                codes: codes,
+                timestamp: timestamp,
+                sign: sign
+              }),
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }).then(function (res) {
+              return res.json();
+            });
+
+          case 2:
+            return _context11.abrupt("return", _context11.sent);
+
+          case 3:
+          case "end":
+            return _context11.stop();
+        }
+      }
+    }, _callee10);
+  }));
+
+  return function requestAllInfo(_x6, _x7, _x8) {
+    return _ref10.apply(this, arguments);
+  };
+}();
+
+var updateConfig =
+/*#__PURE__*/
+function () {
+  var _ref11 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee11(id, doubleSided, withColor, copies, code) {
+    return regeneratorRuntime.wrap(function _callee11$(_context12) {
+      while (1) {
+        switch (_context12.prev = _context12.next) {
+          case 0:
+            _context12.t0 = fetch;
+            _context12.t1 = constructEndpointURL('/set-config');
+            _context12.t2 = {
+              'Content-Type': 'application/json'
+            };
+            _context12.t3 = JSON;
+            _context12.t4 = id;
+            _context12.t5 = {
+              copies: copies,
+              colored: withColor,
+              'double-sided': doubleSided
+            };
+            _context12.next = 8;
+            return requestJobToken(code);
+
+          case 8:
+            _context12.t6 = _context12.sent;
+            _context12.t7 = {
+              id: _context12.t4,
+              config: _context12.t5,
+              token: _context12.t6
+            };
+            _context12.t8 = _context12.t3.stringify.call(_context12.t3, _context12.t7);
+            _context12.t9 = {
+              method: 'POST',
+              headers: _context12.t2,
+              body: _context12.t8
+            };
+
+            _context12.t10 = function (res) {
+              return res.json();
+            };
+
+            _context12.next = 15;
+            return (0, _context12.t0)(_context12.t1, _context12.t9).then(_context12.t10);
+
+          case 15:
+            return _context12.abrupt("return", _context12.sent);
+
+          case 16:
+          case "end":
+            return _context12.stop();
+        }
+      }
+    }, _callee11);
+  }));
+
+  return function updateConfig(_x9, _x10, _x11, _x12, _x13) {
+    return _ref11.apply(this, arguments);
+  };
+}();
+
+var uploadFile =
+/*#__PURE__*/
+function () {
+  var _ref12 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee12(fileObject) {
+    var fileForm, token;
+    return regeneratorRuntime.wrap(function _callee12$(_context13) {
+      while (1) {
+        switch (_context13.prev = _context13.next) {
+          case 0:
+            startLoading('上传文件中…');
+            fileForm = new FormData();
+            fileForm.append('file', fileObject);
+            _context13.next = 5;
+            return createJob();
+
+          case 5:
+            token = _context13.sent;
+
+            if (typeof token['status'] !== 'undefined' && token.status === 1) {
+              popAlert('您上传的文件数量已经达到最大允许值');
+            }
+
+            _context13.t0 = fileForm;
+            _context13.t1 = JSON;
+            _context13.next = 11;
+            return createJob();
+
+          case 11:
+            _context13.t2 = _context13.sent;
+            _context13.t3 = _context13.t1.stringify.call(_context13.t1, _context13.t2);
+
+            _context13.t0.append.call(_context13.t0, 'token', _context13.t3);
+
+            _context13.next = 16;
+            return fetch(constructEndpointURL('/job'), {
+              method: 'POST',
+              body: fileForm
+            }).then(function (res) {
+              return res.json();
+            }).then(function (response) {
+              endLoading();
+
+              if (response.status === 0) {
+                response = response.response;
+                addJob(fileObject.name, response.code, response.id, response.config, response['page-count']);
+              }
+            });
+
+          case 16:
+            return _context13.abrupt("return", _context13.sent);
+
+          case 17:
+          case "end":
+            return _context13.stop();
+        }
+      }
+    }, _callee12);
+  }));
+
+  return function uploadFile(_x14) {
+    return _ref12.apply(this, arguments);
+  };
+}(); // get the session and update the currentStatus
+
+
+var getSession =
+/*#__PURE__*/
+function () {
+  var _ref13 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee13() {
+    return regeneratorRuntime.wrap(function _callee13$(_context14) {
+      while (1) {
+        switch (_context14.prev = _context14.next) {
+          case 0:
+            _context14.next = 2;
+            return fetch('/_api/session').then(function (res) {
+              return res.json();
+            });
+
+          case 2:
+            return _context14.abrupt("return", _context14.sent);
+
+          case 3:
+          case "end":
+            return _context14.stop();
+        }
+      }
+    }, _callee13);
+  }));
+
+  return function getSession() {
+    return _ref13.apply(this, arguments);
+  };
+}();
+
+var updateSession =
+/*#__PURE__*/
+function () {
+  var _ref14 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee14(silent) {
+    var sessionObject, jobInfo, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, config;
+
+    return regeneratorRuntime.wrap(function _callee14$(_context15) {
+      while (1) {
+        switch (_context15.prev = _context15.next) {
+          case 0:
+            if (!silent) startLoading('获取数据…');else $('#linear-loading-progress').style.opacity = 1;
+            _context15.next = 3;
+            return getSession();
+
+          case 3:
+            sessionObject = _context15.sent;
+
+            if (!(currentPrinter.base !== null)) {
+              _context15.next = 29;
+              break;
+            }
+
+            _context15.next = 7;
+            return requestAllInfo(sessionObject.codes, sessionObject.timestamp, sessionObject.sign);
+
+          case 7:
+            jobInfo = _context15.sent;
+            console.log('Got job info: ', jobInfo);
+
+            if (!(jobInfo.status === 0)) {
+              _context15.next = 29;
+              break;
+            }
+
+            _iteratorNormalCompletion = true;
+            _didIteratorError = false;
+            _iteratorError = undefined;
+            _context15.prev = 13;
+
+            for (_iterator = jobInfo.response[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              config = _step.value;
+              console.log('Loading Job: ', config); // detect whether the job exists
+
+              if ($("#job-".concat(config.code)) === null) addJob(config.file, config.code, '', config.config, config.pageCount);
+            }
+
+            _context15.next = 21;
+            break;
+
+          case 17:
+            _context15.prev = 17;
+            _context15.t0 = _context15["catch"](13);
+            _didIteratorError = true;
+            _iteratorError = _context15.t0;
+
+          case 21:
+            _context15.prev = 21;
+            _context15.prev = 22;
+
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+
+          case 24:
+            _context15.prev = 24;
+
+            if (!_didIteratorError) {
+              _context15.next = 27;
+              break;
+            }
+
+            throw _iteratorError;
+
+          case 27:
+            return _context15.finish(24);
+
+          case 28:
+            return _context15.finish(21);
+
+          case 29:
+            if (sessionObject.debt > 0) {
+              currentStatus.debt = sessionObject.debt;
+              popDebt();
+            }
+
+            currentStatus.kredit = sessionObject.kredit;
+            $('#kredit').innerText = Number(currentStatus.kredit) / 100;
+            currentStatus.codes = sessionObject.codes;
+            if (!silent) endLoading();else $('#linear-loading-progress').style.opacity = 0;
+
+          case 34:
+          case "end":
+            return _context15.stop();
+        }
+      }
+    }, _callee14, null, [[13, 17, 21, 29], [22,, 24, 28]]);
+  }));
+
+  return function updateSession(_x15) {
+    return _ref14.apply(this, arguments);
+  };
+}();
+
+var dragAndDropZone = document.getElementById('file-zone');
+var infoBox = document.getElementById('upload-info');
+var file = document.getElementById('file');
+var t;
+
+function setMessage(message) {
+  infoBox.style.opacity = 1;
+  infoBox.innerText = message;
+}
+
+dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function (evt) {
+  evt.preventDefault();
+  dragAndDropZone.classList.add('file-drop-zone__focused');
+  infoBox.style.opacity = 0;
+};
+
+dragAndDropZone.ondragleave = function (evt) {
+  evt.preventDefault();
+  dragAndDropZone.classList.remove('file-drop-zone__focused');
+  setMessage('拖拽文件到这里');
+};
+
+dragAndDropZone.ondrop = function (evt) {
+  evt.preventDefault();
+  dragAndDropZone.classList.remove('file-drop-zone__focused');
+  console.log(evt.dataTransfer.files[0]);
+  t = evt.dataTransfer.files[0];
+
+  if (evt.dataTransfer.files[0].type !== 'application/pdf') {
+    setMessage('请上传 PDF 文件');
+    return;
+  }
+
+  file.files = evt.dataTransfer.files;
+  setMessage("\u6B63\u5728\u4E0A\u4F20".concat(evt.dataTransfer.files[0].name));
+  uploadFile(evt.dataTransfer.files[0]);
+};
+
+file.addEventListener('change', function (e) {
+  console.log('Event change', e);
+  t = file.files[0];
+  console.log('file: ', t);
+
+  if (t.type !== 'application/pdf') {
+    setMessage('请上传 PDF 文件');
+    return;
+  }
+
+  setMessage("\u6B63\u5728\u4E0A\u4F20 ".concat(t.name)); // TODO
+
+  uploadFile(t);
+});
+
+_asyncToGenerator(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee15() {
+  return regeneratorRuntime.wrap(function _callee15$(_context16) {
+    while (1) {
+      switch (_context16.prev = _context16.next) {
+        case 0:
+          _context16.next = 2;
+          return updatePrinter(false);
+
+        case 2:
+          _context16.next = 4;
+          return updateSession(false);
+
+        case 4:
+          setInterval(updatePrinterInfo, 10000);
+          setInterval(updateSession, 30000, true);
+
+        case 6:
+        case "end":
+          return _context16.stop();
+      }
+    }
+  }, _callee15);
+}))();
