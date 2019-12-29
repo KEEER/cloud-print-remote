@@ -12,6 +12,7 @@ body {
     padding: 16px;
     margin-top: 8px;
     transition: box-shadow 0.3s ease;
+    box-sizing: border-box;
 }
 .file-drop-zone__focused{
     box-shadow: inset 0 0 4px 1px var(--mdc-theme-primary);   
