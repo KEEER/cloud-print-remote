@@ -157,6 +157,11 @@ def process_delete_job_token():
     session = get_session_by_code(code)
     logger.debug('[in delete job] Session=> '+str(session))
     if session != None:
+        job_logger.write(json.dumps({
+            'time': time.time(),
+            'code': code,
+            'kiuid': session.get_kiuid()
+        }))
         session.remove_job(code)
         del(session)
     else:
@@ -164,11 +169,6 @@ def process_delete_job_token():
             'status': 1,
             'message': 'code does not exist'
         })
-    job_logger.write(json.dumps({
-        'time': time.time(),
-        'code': code,
-        'kiuid': session.get_kiuid()
-    }))
     return json.dumps({
             'status': 0,
             'message': 'code removed'
