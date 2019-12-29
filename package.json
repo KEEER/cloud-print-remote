@@ -1,0 +1,23 @@
+{
+  "name": "cp-remote",
+  "version": "0.0.0",
+  "description": "Cloud Print Remote",
+  "scripts": {
+    "build": "npx babel static/js/index.es6.js -o static/js/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KEEER/cp-remote.git"
+  },
+  "author": "KEEER",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/KEEER/cp-remote/issues"
+  },
+  "homepage": "https://github.com/KEEER/cp-remote#readme",
+  "dependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7"
+  }
+}
