@@ -24,6 +24,7 @@ class CONSTS:
         DELETE_JOB_TOKEN = '/_api/delete-job-token'
         LOGIN = '/login'
         INDEX = '/'
+        QUICK_CODES = '/quick-codes'
         
 
 account_related_blueprint = Blueprint('account_related_blueprint', __name__)
@@ -172,3 +173,11 @@ def process_delete_job_token():
             'status': 0,
             'message': 'code removed'
         })
+
+@account_related_blueprint.route(CONSTS.ROUTES.QUICK_CODES, methods = ['GET'])
+def process_quick_codes():
+    codes = request.args.get('codes', '')
+    if codes == '':
+        return CONSTS.INVALID_FORM
+    codes = json.loads(codes)
+    return render_template('quick-codes.html', CODES = codes)

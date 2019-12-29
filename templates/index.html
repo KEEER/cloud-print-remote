@@ -64,6 +64,9 @@
           <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span>
           <p></p>
           <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span>
+          <p></p>
+          <span >😉嘿！试试扫这个二维码</span> 
+          <div id="print-qrcode"></div>
         </div>
         <footer class="mdc-dialog__actions">
           <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
@@ -188,6 +191,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@material/auto-init@2.3.0/dist/mdc.autoInit.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@material/textfield@2.3.0/dist/mdc.textfield.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@material/dialog@2.3.0/dist/mdc.dialog.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+
 <script id="jobTemplate" language="x/template">
   <div class="mdc-card job-card" id="job-::code::">
     <div class="job-card--content">
@@ -233,7 +238,7 @@
     </div>
 
     <div class="job-card--actions">
-      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印</button>
+      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印（查看打印码）</button>
       <button id="delete-job-::code::" class="mdc-button mdc-button--outlined">删除任务</button>
     </div>
     <input type="file" style="display: none;" id="file-body"></input>
@@ -248,6 +253,14 @@
   mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTextFieldHelperText)
   mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
   // [element control]
+  var qrcode = new QRCode('print-qrcode', {
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  })
+  qrcode.clear()
   const printerCard = {
     _setBwPrinterStatus(status, isHalted) {
       if (isHalted) {
@@ -384,7 +397,12 @@
       var deleteJobButton = $(withCode('#delete-job'))
 
       printButton.onclick = function() {
-        popDialog(code)
+        qrcode.clear()
+        ;(async ()=>{
+          await updateSession(true)
+          qrcode.makeCode('https://print.keeer.net/quick-codes?codes='+currentStatus.codes)
+          popDialog(code)
+        })()
       }
 
       deleteJobButton.onclick = function () {
@@ -655,8 +673,6 @@
       setMessage('💀 请上传 PDF 文件');
       return;
     }
-    file.files = evt.dataTransfer.files
-    
     setMessage('🤗 好嘞，正在上传' + evt.dataTransfer.files[0].name);
     uploadFile(evt.dataTransfer.files[0])
   };
