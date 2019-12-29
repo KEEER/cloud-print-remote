@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Cloud Print Remote",
   "scripts": {
-    "build": "npx babel static/js/index.es6.js -o static/js/index.js"
+    "build": "babel static/js/index.es6.js -o static/js/index.js"
   },
   "repository": {
     "type": "git",

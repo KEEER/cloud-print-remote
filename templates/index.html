@@ -28,13 +28,6 @@
         <span class="printer-status printer-status__unavaliable" id="bw-printer-status-icon"> ⬤</span>
         <span clas="mdc-typography--body1" id="bw-printer-status">不可用</span>
       </div>
-      <!--
-      <div class="printer-card__status">
-        <span clas="mdc-typography--body1">彩色打印机：  </span>
-        <span class="printer-status printer-status__unavaliable" id="color-printer-status-icon"> ⬤</span>
-        <span clas="mdc-typography--body1" id="color-printer-status">不可用</span>
-      </div>
-      -->
       <span clas="mdc-typography--body1" id="printer-description">描述：这是一台打印机</span>
     </div>
   </div>
@@ -60,13 +53,11 @@
       -->您的打印码<!--
     --></h2>
         <div class="mdc-dialog__content"> 
-          <h3 class="mdc-typography--headline3"id="print-code"></h3>
-          <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span>
-          <p></p>
-          <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span>
-          <p></p>
-          <span >😉嘿！试试扫这个二维码</span> 
-          <div id="print-qrcode"></div>
+          <h3 class="mdc-typography--headline3" id="print-code"></h3>
+          <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span><br>
+          <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span><br><br>
+          <span>试试扫这个二维码：</span><br>
+          <img id="print-qrcode"></img>
         </div>
         <footer class="mdc-dialog__actions">
           <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
@@ -197,8 +188,10 @@
   <div class="mdc-card job-card" id="job-::code::">
     <div class="job-card--content">
     <span class="mdc-typography--headline5 job-title">::jobTitle::</span>
-    <span class="mdc-typography--body">共 <span id="page-number-::code::">::pageNumber::</span> 页；
-                                          <span id="price-::code::">::price::</span> 元
+    <span class="mdc-typography--body">
+      共 <span id="page-number-::code::">::pageNumber::</span> 页，
+      <span id="price-::code::">::price::</span> 元，
+      打印码：<span>::code::</span>
     </span>
     </div>
     <div class="job-card--options">
@@ -238,7 +231,7 @@
     </div>
 
     <div class="job-card--actions">
-      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印（查看打印码）</button>
+      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印</button>
       <button id="delete-job-::code::" class="mdc-button mdc-button--outlined">删除任务</button>
     </div>
     <input type="file" style="display: none;" id="file-body"></input>

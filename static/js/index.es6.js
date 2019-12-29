@@ -8,8 +8,9 @@ mdc.autoInit.mdcAutoInit.register('MDCTextFieldHelperText', mdc.textfield.MDCTex
 mdc.autoInit.mdcAutoInit.register('MDCSwitch', mdc.switch.MDCSwitch)
 const bwStatusIconEl = $('#bw-printer-status-icon')
 const bwStatusEl = $('#bw-printer-status')
-$('#bw-printer-status')
-// [element control]
+
+// start element control
+
 const printerCard = {
   _setBwPrinterStatus (status, isHalted) {
     if (isHalted) {
@@ -49,46 +50,37 @@ const printerCard = {
     }
     
   },
-  /*
-  _setColorPrinterStatus(status) {
-    $('#color-printer-status-icon').classList.remove(status.state === 'idle' ? 'printer-status__unavaliable': 'printer-status__avaliable')
-    $('#color-printer-status-icon').classList.add(status.state === 'idle' ? 'printer-status__avaliable': 'printer-status__unavaliable')
-    $('#color-printer-status').innerText = status.message === '' ? '就绪' : status.message
-  }, */
   setPrinterInfo (name, states, description) {
     console.log('setPrinterInfo: status: ', states)
     $('#printer-info').innerText = name
     this._setBwPrinterStatus(states.bw, states.halted)
-    //this._setColorPrinterStatus(states.colored)
     $('#printer-description').innerText = description
   }
 }
 
 const priceWarningDialog = new mdc.dialog.MDCDialog($('#recharge-dialog'))
-function popPriceWarning() {
+const popPriceWarning = () => {
   $('#total-price').innerText = currentStatus.totalCost / 100
   $('#total-kredit').innerText = currentStatus.kredit / 100
   priceWarningDialog.open()
 }
 const dialogBox = new mdc.dialog.MDCDialog($('#go-print-dialog'))
-function popDialog(jobCode) {
-  $('#print-code').innerText = jobCode
+const popDialog = code => {
+  $('#print-code').innerText = code
   dialogBox.open()
 }
 
 const alertBox = new mdc.dialog.MDCDialog($('#alert-dialog'))
-function popAlert(message) {
+const popAlert = message => {
   $('#alert-message').innerText = message
   alertBox.open()
 }
 const loadingBox = new mdc.dialog.MDCDialog($('#loading-dialog'))
-const startLoading = function(message) {
+const startLoading = message => {
   $('#loading-title').innerText = message
   loadingBox.open()
 }
-const endLoading = function() {
-  loadingBox.close()
-}
+const endLoading = () => loadingBox.close()
 loadingBox.scrimClickAction = loadingBox.escapeKeyAction = ''
 
 const debtBox = new mdc.dialog.MDCDialog($('#debt-dialog'))
@@ -106,83 +98,85 @@ const showUploadField = () => {
   console.log('showJob')
   $('#file-zone').classList.remove('invisible')
 }
-const addJob = function (fileName, code, id, config, pageCount) {
+const addJob = async (fileName, code, id, config, pageCount) => {
   startLoading('创建任务…')
   console.log('Trying to add job: ', fileName, code, id, config, pageCount)
   let price = 0
-  ;(async ()=>{
-    console.log('Getting price: ', config.colored)
-    price = await getPrice(pageCount * config.copies, config.colored)
+  endLoading()
+  console.log('Getting price: ', config.colored)
+  price = await getPrice(pageCount * config.copies, config.colored)
+  currentStatus.totalCost += price
+  if (currentStatus.totalCost > currentStatus.kredit) {
+    popPriceWarning()
+  }
+  const el = document.createElement('div')
+  el.classList.add('job-wrapper')
+  el.innerHTML = jobTemplate
+    .replace(/::jobTitle::/g, fileName)
+    .replace(/::pageNumber::/g, pageCount)
+    .replace(/::price::/g, price / 100)
+    .replace(/::code::/g, code)
+  $('#job-list').appendChild(el)
+  mdc.autoInit.mdcAutoInit()
+
+  const withCode = value => `${value}-${code}`
+
+  // about info
+  const pageNumberInfo = $(withCode('#page-number'))
+  const priceInfo = $(withCode('#price'))
+  // about config
+  const doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
+  doubleSidedSwitch.checked = config['double-sided']
+  const colorSwitch = $(withCode('#c-switch')).MDCSwitch
+  colorSwitch.checked = config.colored
+  const copiesTextfield = $(withCode('#c')).MDCTextField
+  copiesTextfield.value = config.copies
+  // about action
+  const printButton = $(withCode('#go-print'))
+  const deleteJobButton = $(withCode('#delete-job'))
+
+  printButton.onclick = async () => {
+    await updateSession(true)
+    $('#print-qrcode').src = await new Promise(resolve => {
+      QRCode.toDataURL(`https://print.keeer.net/quick-codes?codes=${JSON.stringify(currentStatus.codes)}`, {
+        errorCorrectionLevel: 'H',
+        type: 'image/png',
+        margin: 1,
+        color: { dark: '#002D4DFF', light: '#FFFFFFFF' }
+      }, (_e, res) => resolve(res))
+    })
+    popDialog(code)
+  }
+
+  deleteJobButton.onclick = async () => {
+    startLoading('删除中…')
+    await deleteJob(code)
+    $(withCode('#job')).remove()
+    currentStatus.totalCost -= price
+    endLoading()
+  }
+
+  console.log('log elements: ', doubleSidedSwitch, colorSwitch, copiesTextfield)
+  $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = async () => {
+    console.log('Value Changed')
+    if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value = 1
+    if (copiesTextfield.value * pageCount > 50) {
+      copiesTextfield.value = Math.floor(50 / pageCount)
+    }
+    console.log('Value changed')
+    startLoading('更新打印配置…')
+    console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
+    await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
+    const jobPrice = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
+    currentStatus.totalCost -= price
+    price = jobPrice
     currentStatus.totalCost += price
+    priceInfo.innerText = jobPrice / 100
     if (currentStatus.totalCost > currentStatus.kredit) {
       popPriceWarning()
     }
-    const el = document.createElement('div')
-    el.classList.add('job-wrapper')
-    el.innerHTML = jobTemplate
-      .replace(/::jobTitle::/g, fileName)
-      .replace(/::pageNumber::/g, pageCount)
-      .replace(/::price::/g, price / 100)
-      .replace(/::code::/g, code)
-    $('#job-list').appendChild(el)
-    mdc.autoInit.mdcAutoInit()
-
-    const withCode = value => value + '-' + code
-    
-    // about info
-    const pageNumberInfo = $(withCode('#page-number'))
-    const priceInfo = $(withCode('#price'))
-    // about config
-    const doubleSidedSwitch = $(withCode('#ds-switch')).MDCSwitch
-    doubleSidedSwitch.checked = config['double-sided']
-    const colorSwitch = $(withCode('#c-switch')).MDCSwitch
-    colorSwitch.checked = config.colored
-    const copiesTextfield = $(withCode('#c')).MDCTextField
-    copiesTextfield.value = config.copies
-    // about action
-    const printButton = $(withCode('#go-print'))
-    const deleteJobButton = $(withCode('#delete-job'))
-
-    printButton.onclick = function() {
-      popDialog(code)
-    }
-
-    deleteJobButton.onclick = function () {
-      ;(async() => {
-        startLoading('删除中…')
-
-        await deleteJob(code)
-        $(withCode('#job')).remove()
-        currentStatus.totalCost -= price
-        endLoading()
-      })()
-    }
-
-    console.log('log elements: ', doubleSidedSwitch, colorSwitch, copiesTextfield)
-    $(withCode('#copies')).onchange = $(withCode('#double-sided-switch')).onchange = $(withCode('#color-switch')).onchange = function() {
-      console.log('Value Changed')
-      ;(async() => {
-        startLoading('更新打印配置…')
-        console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
-        await updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
-        const temporaryValue = await getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked)
-        currentStatus.totalCost -= price
-        price = temporaryValue
-        currentStatus.totalCost += price
-        priceInfo.innerText = temporaryValue / 100
-        if (currentStatus.totalCost > currentStatus.kredit) {
-          popPriceWarning()
-        }
-        endLoading()
-      })()
-      if (copiesTextfield.value == null || copiesTextfield.value == '') copiesTextfield.value=1
-      if (copiesTextfield.value * pageCount > 50) {
-
-        copiesTextfield.value = Math.floor(50 / pageCount)
-      }
-      console.log('Value changed')
-    }
-  })()
+    endLoading()
+  }
   endLoading()
 }
 //end element control
@@ -191,7 +185,7 @@ let currentStatus = {
   codes: [],
   kredit: 0,
   totalCost: 0,
-  debt: 0
+  debt: 0,
 }
 let currentPrinter = {
   id: 255,
@@ -201,9 +195,9 @@ let currentPrinter = {
   description: '等待数据。请确保您已经连接到学校的 WIFI',
   base: null,
 }
-const constructEndpointURL = function (route) { return new URL(route, currentPrinter.base) }
+const constructEndpointURL = path => new URL(path, currentPrinter.base)
 
-const updatePrinter = async function(silent) {
+const updatePrinter = async silent => {
   if (!silent) startLoading('搜索局域网内的打印终端…')
   const printerConfigs = await fetch('/_api/printer-ips').then(res => res.json())
 
@@ -211,16 +205,14 @@ const updatePrinter = async function(silent) {
   console.log(Object.keys(printerConfigs))
   for (let id of Object.keys(printerConfigs)) {
     const ip = printerConfigs[id]
-    if (!silent) startLoading('尝试连接到打印机：#' + id)
+    if (!silent) startLoading(`尝试连接到打印机：#${id}`)
     const base = new URL(`https://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
     console.log('Trying printer id: ', id)
   
     try {
-      const res = await new Promise( function(resolve, reject) {
-        setTimeout(function(){
-          reject(new Error('Timeout.'))
-        }, 1500)
-        fetch(new URL('/status', base),{method: 'GET'}, 1).then(function(resp){resolve(resp)})
+      const res = await new Promise((resolve, reject) => {
+        setTimeout(reject, 1500, new Error('Timeout.'))
+        fetch(new URL('/status', base)).then(resolve).catch(reject)
       }).then(res => res.json())
       
       if (res.status !== 0) throw res
@@ -241,9 +233,9 @@ const updatePrinter = async function(silent) {
       continue
     }
   }
-  $('#printer-logo').src='/static/img/logo.png'
+  $('#printer-logo').src = '/static/img/logo.png'
   if (currentPrinter.base === null) {
-    $('#printer-logo').src='/static/img/NotConnected.png'
+    $('#printer-logo').src = '/static/img/NotConnected.png'
     printerCard.setPrinterInfo('等待数据', {
         bw: { state:'unavaliable', message:'' },
         colored: { state:'idle', message:'' },
@@ -282,11 +274,16 @@ const deleteJob = async code => {
   })
 }
 
-const createJob = async () => await fetch('/_api/job-token').then(res => res.json())
-const requestJobToken = async code => await fetch(`/_api/job-token?code=${code}`).then(res => res.json())
+const createJob = () => fetch('/_api/job-token').then(res => res.json())
+const requestJobToken = code => fetch(`/_api/job-token?code=${code}`).then(res => res.json())
 const getPrice = async (pageCount, colored) => {
-  console.log(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`)
-  return await fetch(`/_api/calculate-price?config={"page-count":${pageCount},"colored":${colored}}&printer_id=${currentPrinter.id}`).then(res=>res.json()).then(response=> {
+  const url = new URL('/_api/calculate-price', location)
+  url.search = new URLSearchParams({
+    config: JSON.stringify({ 'page-count': pageCount, colored }),
+    printer_id: currentPrinter.id,
+  })
+  console.log(url)
+  return await fetch(url).then(res => res.json()).then(response => {
     if (response.status === 0) return response.result
     console.log('Error: ', response)
   })
@@ -324,7 +321,7 @@ const updateConfig = async (id, doubleSided, withColor, copies, code) => {
   }).then(res => res.json())
 }
 
-const uploadFile = async function(fileObject) {
+const uploadFile = async fileObject => {
   startLoading('上传文件中…')
 
   const fileForm = new FormData()
@@ -333,11 +330,11 @@ const uploadFile = async function(fileObject) {
   if (typeof token['status'] !== 'undefined' && token.status === 1){
     popAlert('您上传的文件数量已经达到最大允许值')
   }
-  fileForm.append('token', JSON.stringify(await createJob()))
-  return await fetch(constructEndpointURL('/job'),{
+  fileForm.append('token', JSON.stringify(token))
+  return await fetch(constructEndpointURL('/job'), {
     method: 'POST',
-    body: fileForm
-  }).then(res => res.json()).then(function(response) {
+    body: fileForm,
+  }).then(res => res.json()).then(response => {
     endLoading()
     if (response.status === 0) {
       response = response.response
@@ -381,29 +378,27 @@ const dragAndDropZone = document.getElementById('file-zone')
 const infoBox = document.getElementById('upload-info')
 const file = document.getElementById('file')
 
-let t
-function setMessage(message) {
+const  setMessage = message => {
   infoBox.style.opacity = 1
   infoBox.innerText = message
 }
 
-dragAndDropZone.ondragover = dragAndDropZone.ondragenter = function (evt) {
+dragAndDropZone.ondragover = dragAndDropZone.ondragenter = evt => {
   evt.preventDefault()
   dragAndDropZone.classList.add('file-drop-zone__focused')
   infoBox.style.opacity = 0
 }
-dragAndDropZone.ondragleave = function (evt) {
+dragAndDropZone.ondragleave = evt => {
   evt.preventDefault()
   dragAndDropZone.classList.remove('file-drop-zone__focused')
-
   setMessage('拖拽文件到这里')
 }
-dragAndDropZone.ondrop = function (evt) {
+dragAndDropZone.ondrop = evt => {
   evt.preventDefault()
   dragAndDropZone.classList.remove('file-drop-zone__focused')
   console.log(evt.dataTransfer.files[0])
-  t = evt.dataTransfer.files[0]
-  if (evt.dataTransfer.files[0].type !== 'application/pdf') {
+  const currentFile = evt.dataTransfer.files[0]
+  if (currentFile.type !== 'application/pdf') {
     setMessage('请上传 PDF 文件')
     return
   }
@@ -412,19 +407,20 @@ dragAndDropZone.ondrop = function (evt) {
   setMessage(`正在上传${evt.dataTransfer.files[0].name}`)
   uploadFile(evt.dataTransfer.files[0])
 }
-file.addEventListener('change', function (e) {
+file.addEventListener('change', e => {
   console.log('Event change', e)
-  t = file.files[0]
-  console.log('file: ', t)
-  if (t.type !== 'application/pdf') {
+  const currentFile = file.files[0]
+  console.log('file: ', currentFile)
+  if (currentFile.type !== 'application/pdf') {
     setMessage('请上传 PDF 文件')
     return
   }
-  setMessage(`正在上传 ${t.name}`)
+  setMessage(`正在上传 ${currentFile.name}`)
   // TODO
-  uploadFile(t)
+  uploadFile(currentFile)
 })
-;(async()=>{
+
+;(async() => {
   await updatePrinter(false)
   await updateSession(false)
   setInterval(updatePrinterInfo, 10000)
