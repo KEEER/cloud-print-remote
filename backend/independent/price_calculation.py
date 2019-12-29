@@ -3,10 +3,11 @@ from config import endpoint_config
 # [Python native modules]
 import configparser
 import json
+from logging import getLogger
 # [Third-party modules]
 
 
-
+logger = getLogger(__name__)
 
 def calculate_price(config, printer):
     """
@@ -30,4 +31,7 @@ def calculate_price(config, printer):
             return endpoint_config[printer][print_type][page_count-1]
     except KeyError:
         # double security
+        return -2
+    except Exception as other_exception:
+        logger.exception('<{' + str(other_exception) + '}> happend with config <'+str(config)+'> ')
         return -2

@@ -7,7 +7,7 @@
 .introduction-panel {
     width: 100%;
     height: 320px;
-    background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR28PPQt0zmiiFI7-JuZNBFThRKMwrWmeCvI3Qk2gHyrP2NQ4cQ&s');
+    background-image: url('/static/img/welcome-background.jpg');
     background-size: cover;
     text-align: center;
     color: white;
