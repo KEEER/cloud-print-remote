@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/static/css/index.css" />
 {% endblock stylesheet %}
 {% block header%}
-  <span>您的 Kredit 余额<span id="kredit"> ? </span>元</span>
+  <span>您的 Kredit 余额 <span id="kredit">?</span> 元</span>
 {% endblock header%}
 {% block content %}
 <div role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate" id="linear-loading-progress">
@@ -19,22 +19,15 @@
     <span class="mdc-linear-progress__bar-inner"></span>
   </div>
 </div>
-  <div class="mdc-card printer-card">
+  <div class="printer-card">
     <img class="printer-card__logo" id="printer-logo" src="/static/img/logo.png" />
     <div class="printer-card__content">
-      <h5 class="mdc-typography--headline5" style="margin: 0 10px 0 0;"id="printer-info">ICC楼四层东侧</h5>
+      <h5 class="mdc-typography--headline5" id="printer-info">ICC楼四层东侧</h5>
       <div class="printer-card__status">
         <span clas="mdc-typography--body1">打印机：</span>
-        <span class="printer-status printer-status__unavaliable" id="bw-printer-status-icon"> ⬤</span>
+        <span class="printer-status printer-status__unavaliable" id="bw-printer-status-icon">⬤</span>
         <span clas="mdc-typography--body1" id="bw-printer-status">不可用</span>
       </div>
-      <!--
-      <div class="printer-card__status">
-        <span clas="mdc-typography--body1">彩色打印机：  </span>
-        <span class="printer-status printer-status__unavaliable" id="color-printer-status-icon"> ⬤</span>
-        <span clas="mdc-typography--body1" id="color-printer-status">不可用</span>
-      </div>
-      -->
       <span clas="mdc-typography--body1" id="printer-description">描述：这是一台打印机</span>
     </div>
   </div>
@@ -60,13 +53,11 @@
       -->您的打印码<!--
     --></h2>
         <div class="mdc-dialog__content"> 
-          <h3 class="mdc-typography--headline3"id="print-code"></h3>
-          <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span>
-          <p></p>
-          <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span>
-          <p></p>
-          <span >😉嘿！试试扫这个二维码</span> 
-          <div id="print-qrcode"></div>
+          <h3 class="mdc-typography--headline3" id="print-code"></h3>
+          <span class="mdc-typography--body1">走到打印机前，输入上方的四个数字 即可立刻打印您的文件</span><br>
+          <span class="mdc-typography--body1">您未打印的文件将被保存24小时</span><br><br>
+          <span>试试扫这个二维码：</span><br>
+          <img id="print-qrcode"></img>
         </div>
         <footer class="mdc-dialog__actions">
           <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
@@ -182,7 +173,7 @@
     </div>
     <div class="mdc-dialog__scrim"></div>
   </div>
-  <a style="margin: 16px;" class="mdc-button mdc-button--raised" href="https://wj.qq.com/s2/5214715/2844/">反馈一个 Bug</a>
+  <a style="margin: 16px;" class="mdc-button mdc-button--outlined" href="https://wj.qq.com/s2/5214715/2844/">反馈一个 Bug</a>
 <input id="file" type="file" accept="application/pdf" style="display: none;" />
 {% endblock content %}
 {% block script %}
@@ -194,51 +185,56 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 
 <script id="jobTemplate" language="x/template">
-  <div class="mdc-card job-card" id="job-::code::">
+  <div class="mdc-card mdc-card--outlined job-card" id="job-::code::">
     <div class="job-card--content">
-    <span class="mdc-typography--headline5 job-title">::jobTitle::</span>
-    <span class="mdc-typography--body">共 <span id="page-number-::code::">::pageNumber::</span> 页；
-                                          <span id="price-::code::">::price::</span> 元
-    </span>
-    </div>
-    <div class="job-card--options">
-      <div class="switch">
-        <div class="mdc-switch" id="ds-switch-::code::" data-mdc-auto-init="MDCSwitch">
-          <div class="mdc-switch__track"></div>
-          <div class="mdc-switch__thumb-underlay">
-            <div class="mdc-switch__thumb">
-              <input type="checkbox" id="double-sided-switch-::code::" class="mdc-switch__native-control" role="switch" />
+      <span class="mdc-typography--headline5 job-title">::jobTitle::</span>
+      <span class="mdc-typography--body">
+        共 <span id="page-number-::code::">::pageNumber::</span> 页，
+        <span id="price-::code::">::price::</span> 元，
+        打印码：<span>::code::</span>
+      </span>
+      <span class="job-card-pad"></span>
+      <div class="job-card--options">
+        <div class="switch">
+          <label for="double-sided-switch-::code::">双面打印</label>
+          <div class="mdc-switch" id="ds-switch-::code::" data-mdc-auto-init="MDCSwitch">
+            <div class="mdc-switch__track"></div>
+            <div class="mdc-switch__thumb-underlay">
+              <div class="mdc-switch__thumb">
+                <input type="checkbox" id="double-sided-switch-::code::" class="mdc-switch__native-control" role="switch" />
+              </div>
             </div>
           </div>
         </div>
-        <label for="double-sided-switch">双面打印</label>
-      </div>
-      <div class="switch">
-        <div class="mdc-switch" id="c-switch-::code::" data-mdc-auto-init="MDCSwitch">
-          <div class="mdc-switch__track"></div>
-          <div class="mdc-switch__thumb-underlay">
-            <div class="mdc-switch__thumb">
-              <input type="checkbox" id="color-switch-::code::" class="mdc-switch__native-control" role="switch" />
+        <span class="switch-divider">&#8203;</span>
+        <div class="switch">
+          <label for="color-switch-::code::">彩色打印</label>
+          <div class="mdc-switch" id="c-switch-::code::" data-mdc-auto-init="MDCSwitch">
+            <div class="mdc-switch__track"></div>
+            <div class="mdc-switch__thumb-underlay">
+              <div class="mdc-switch__thumb">
+                <input type="checkbox" id="color-switch-::code::" class="mdc-switch__native-control" role="switch" />
+              </div>
             </div>
           </div>
         </div>
-        <label for="color-switch">彩色打印</label>
-      </div>
+        <span class="switch-divider">&#8203;</span>
 
-      <div class="mdc-text-field mdc-text-field--outlined copies" id="c-::code::" data-mdc-auto-init="MDCTextField">
-        <input id="copies-::code::" type="number" min="1" step="1" class="mdc-text-field__input" value="1" />
-        <div class="mdc-notched-outline mdc-notched-outline--upgraded">
-          <div class="mdc-notched-outline__leading"></div>
-          <div class="mdc-notched-outline__notch" style="">
-            <label for="copies-::code::" class="mdc-floating-label mdc-floating-label--float-above" style="">打印份数</label>
+        <div class="mdc-text-field mdc-text-field--outlined copies" id="c-::code::" data-mdc-auto-init="MDCTextField">
+          <input id="copies-::code::" type="number" min="1" step="1" class="mdc-text-field__input" value="1" />
+          <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+            <div class="mdc-notched-outline__leading"></div>
+            <div class="mdc-notched-outline__notch" style="">
+              <label for="copies-::code::" class="mdc-floating-label mdc-floating-label--float-above" style="">打印份数</label>
+            </div>
+            <div class="mdc-notched-outline__trailing"></div>
           </div>
-          <div class="mdc-notched-outline__trailing"></div>
         </div>
       </div>
     </div>
 
     <div class="job-card--actions">
-      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印（查看打印码）</button>
+      <button id="go-print-::code::" class="mdc-button mdc-button--raised">去打印</button>
       <button id="delete-job-::code::" class="mdc-button mdc-button--outlined">删除任务</button>
     </div>
     <input type="file" style="display: none;" id="file-body"></input>

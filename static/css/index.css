@@ -4,19 +4,18 @@ body {
 .file-drop-container {
     display: flex;
     margin: 0;
-    
 }
 .file-drop-zone {
     width: 80%;
     border: 1px dashed var(--mdc-theme-primary);
-    border-radius: 20px;
+    border-radius: 4px;
     padding: 16px;
     margin-top: 8px;
-    
     transition: box-shadow 0.3s ease;
+    box-sizing: border-box;
 }
 .file-drop-zone__focused{
-    box-shadow: inset 0 0 4px 2px var(--mdc-theme-primary);   
+    box-shadow: inset 0 0 4px 1px var(--mdc-theme-primary);   
 }
 
 .file-drop__helper {
@@ -25,18 +24,20 @@ body {
 }
 
 .printer-card {
-    padding: 0 16px 16px 16px;
-    border-radius: 0 0 20px 20px;
+    padding: 32px 0;
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     width: 80%;
 }
 .printer-card__logo {
     border-radius: 50%;
     max-width: 128px;
     margin: 16px;
-    
+}
+#printer-info {
+    margin: 8px 0;
 }
 
 .printer-card__content {
@@ -78,39 +79,49 @@ body {
     width: 80%;
 }
 .job-card {
-    margin: 8px;
-    padding: 8px;
+    margin: 8px 0;
+    padding: 16px;
     width: 100%;
     text-align: left;
 }
 .job-card--content {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: baseline;
+    flex-wrap: wrap;
 }
 .job-title {
-    margin: 4px;
-    width: 50%;
+    margin-right: 16px;
+    max-width: 50%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .job-card--options {
     display: flex;
-    flex-direction: column;
-    padding: 4px;
-    align-self: left;
-    width: 30%;
+    flex-direction: row;
+    align-items: baseline;
+    min-width: 380px;
     margin-bottom: 16px;
 }
+.job-card-pad {
+    flex: 1;
+}
+.switch-divider {
+    border-left: 1px solid #e0e0e0;
+    height: 32px;
+    margin: 0 16px;
+}
 .mdc-switch {
-    margin-right: 8px;
+    margin-left: 16px;
 }
 .switch {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 16px;
+}
+.copies {
+    width: 120px;
 }
 
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
@@ -124,18 +135,16 @@ body {
 }
 
 .mdc-text-field {
-    transition: margin-top 0.1s ease;
-    margin-top: 8px;
-}
-.mdc-text-field--focused {
     margin-top: 16px;
 }
 .invisible {
     display: none;
 }
 
-
 @media(max-width: 720px) {
+    .file-list-container {
+        width: 90%;
+    }
     .printer-card {
         flex-direction: column;
         align-items: center;
@@ -143,7 +152,9 @@ body {
     .job-card--options {
         align-self: center;
         text-align: center;
-        width: 80%;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
     }
     .job-card--content {
         flex-direction: column;
@@ -152,7 +163,14 @@ body {
         display: none;
     }
     .job-title {
-        width: 90%;
+        width: 100%;
+        max-width: 100%;
+    }
+    .switch {
+        margin-top: 16px;
+    }
+    .switch-divider {
+        display: none;
     }
 }
 
