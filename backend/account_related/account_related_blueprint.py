@@ -47,7 +47,7 @@ def process_index():
 def process_request_job_token():
     # access the token
     code = request.args.get('code', '')
-
+    token = request.cookies.get(CONSTS.TOKEN, '')
     session = get_session_by_token(token)
     debt = session.get_debt()
     if debt > 0:
