@@ -183,7 +183,10 @@ function () {
                           errorCorrectionLevel: 'H',
                           type: 'image/png',
                           margin: 1,
-                          color: { dark: '#424242FF', light: '#FFFFFFFF' }
+                          color: {
+                            dark: '#424242FF',
+                            light: '#FFFFFFFF'
+                          }
                         }, function (_e, res) {
                           return resolve(res);
                         });
@@ -242,19 +245,19 @@ function () {
                       if (copiesTextfield.value * pageCount > 50) {
                         copiesTextfield.value = Math.floor(50 / pageCount);
                       }
-                      if(copiesTextfield.value < 1) copiesTextfield.value = 1
 
+                      if (copiesTextfield.value < 1) copiesTextfield.value = 1;
                       console.log('Value changed');
                       startLoading('更新打印配置…');
                       console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code);
-                      _context3.next = 8;
+                      _context3.next = 9;
                       return updateConfig(id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code);
 
-                    case 8:
-                      _context3.next = 10;
+                    case 9:
+                      _context3.next = 11;
                       return getPrice(pageCount * Number(copiesTextfield.value), colorSwitch.checked);
 
-                    case 10:
+                    case 11:
                       jobPrice = _context3.sent;
                       currentStatus.totalCost -= price;
                       price = jobPrice;
@@ -267,7 +270,7 @@ function () {
 
                       endLoading();
 
-                    case 17:
+                    case 18:
                     case "end":
                       return _context3.stop();
                   }
@@ -301,7 +304,7 @@ var currentPrinter = {
   ip: '0.0.0.0',
   avaliable: true,
   name: '等待数据',
-  description: '等待数据。请确保您已经连接到学校的 WIFI',
+  description: '等待数据。请确保您已经连接到学校的 Wi-Fi',
   base: null
 };
 
@@ -315,7 +318,7 @@ function () {
   var _ref5 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee5(silent) {
-    var printerConfigs, _loop2, _i, _Object$keys, _ret;
+    var printerConfigs, stillConnected, _loop2, _i, _Object$keys, _ret;
 
     return regeneratorRuntime.wrap(function _callee5$(_context6) {
       while (1) {
@@ -331,6 +334,7 @@ function () {
             printerConfigs = _context6.sent;
             console.log('Get printer config: ', printerConfigs);
             console.log(Object.keys(printerConfigs));
+            stillConnected = false;
             _loop2 =
             /*#__PURE__*/
             regeneratorRuntime.mark(function _loop2() {
@@ -375,52 +379,53 @@ function () {
                       };
                       console.log('Status: ', config);
                       printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description);
+                      stillConnected = true;
                       return _context5.abrupt("return", "break");
 
-                    case 18:
-                      _context5.prev = 18;
+                    case 19:
+                      _context5.prev = 19;
                       _context5.t0 = _context5["catch"](5);
                       console.log('Failed.', _context5.t0);
                       return _context5.abrupt("return", "continue");
 
-                    case 22:
+                    case 23:
                     case "end":
                       return _context5.stop();
                   }
                 }
-              }, _loop2, null, [[5, 18]]);
+              }, _loop2, null, [[5, 19]]);
             });
             _i = 0, _Object$keys = Object.keys(printerConfigs);
 
-          case 8:
+          case 9:
             if (!(_i < _Object$keys.length)) {
-              _context6.next = 19;
+              _context6.next = 20;
               break;
             }
 
-            return _context6.delegateYield(_loop2(), "t0", 10);
+            return _context6.delegateYield(_loop2(), "t0", 11);
 
-          case 10:
+          case 11:
             _ret = _context6.t0;
             _context6.t1 = _ret;
-            _context6.next = _context6.t1 === "break" ? 14 : _context6.t1 === "continue" ? 15 : 16;
+            _context6.next = _context6.t1 === "break" ? 15 : _context6.t1 === "continue" ? 16 : 17;
             break;
-
-          case 14:
-            return _context6.abrupt("break", 19);
 
           case 15:
-            return _context6.abrupt("continue", 16);
+            return _context6.abrupt("break", 20);
 
           case 16:
+            return _context6.abrupt("continue", 17);
+
+          case 17:
             _i++;
-            _context6.next = 8;
+            _context6.next = 9;
             break;
 
-          case 19:
+          case 20:
             $('#printer-logo').src = '/static/img/logo.png';
 
-            if (currentPrinter.base === null) {
+            if (currentPrinter.base === null || !stillConnected) {
               $('#printer-logo').src = '/static/img/NotConnected.png';
               printerCard.setPrinterInfo('等待数据', {
                 bw: {
@@ -432,13 +437,13 @@ function () {
                   message: ''
                 },
                 halted: false
-              }, '等待数据。请确保您已经连接到学校的 WIFI');
+              }, '等待数据。请确保您已经连接到学校的 Wi-Fi');
               console.log('No printers Avaliable');
             }
 
             endLoading();
 
-          case 22:
+          case 23:
           case "end":
             return _context6.stop();
         }
@@ -746,6 +751,7 @@ function () {
 
               if (response.status === 0) {
                 response = response.response;
+                console.log('Creating job card: ', response);
                 addJob(fileObject.name, response.code, response.id, response.config, response['page-count']);
               }
             });
@@ -843,7 +849,7 @@ function () {
               config = _step.value;
               console.log('Loading Job: ', config); // detect whether the job exists
 
-              if ($("#job-".concat(config.code)) === null) addJob(config.file, config.code, '', config.config, config['page-count'])
+              if ($("#job-".concat(config.code)) === null) addJob(config.file, config.code, '', config.config, config['page-count']);
             }
 
             _context14.next = 21;

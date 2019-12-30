@@ -55,14 +55,17 @@ class Session:
 
 
     def remove_job(self, code):
+        logger.debug("removing log: "+code)
+        with connect_to_database() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM print_codes WHERE code = %s;', (code, ))
         if self.has_job(code):
             # remove from the database
-            with connect_to_database() as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute('DELETE FROM print_codes WHERE code = %s;', (code, ))
             self._jobs.remove(code)
             self.job_number -= 1
+            logger.debug('Saving log...')
             self.save()
+            logger.debug('Succeed; current codes: '+str(self._jobs))
 
     def _code_is_valid(self, code):
         is_valid = True
