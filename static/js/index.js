@@ -245,6 +245,7 @@ function () {
                       if (copiesTextfield.value * pageCount > 50) {
                         copiesTextfield.value = Math.floor(50 / pageCount);
                       }
+                      if(copiesTextfield.value < 1) copiesTextfield.value = 1
 
                       console.log('Value changed');
                       startLoading('更新打印配置…');

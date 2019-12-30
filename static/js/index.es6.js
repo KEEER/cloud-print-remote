@@ -142,7 +142,7 @@ const addJob = async (fileName, code, id, config, pageCount) => {
         errorCorrectionLevel: 'H',
         type: 'image/png',
         margin: 1,
-        color: { dark: '#002D4DFF', light: '#FFFFFFFF' }
+        color: { dark: '#000000FF', light: '#FFFFFFFF' }
       }, (_e, res) => resolve(res))
     })
     popDialog(code)
@@ -163,6 +163,8 @@ const addJob = async (fileName, code, id, config, pageCount) => {
     if (copiesTextfield.value * pageCount > 50) {
       copiesTextfield.value = Math.floor(50 / pageCount)
     }
+    if(copiesTextfield.value < 1) copiesTextfield.value = 1
+    
     console.log('Value changed')
     startLoading('更新打印配置…')
     console.log('sending current status:', id, doubleSidedSwitch.checked, colorSwitch.checked, Number(copiesTextfield.value), code)
@@ -192,7 +194,7 @@ let currentPrinter = {
   ip: '0.0.0.0',
   avaliable: true,
   name: '等待数据',
-  description: '等待数据。请确保您已经连接到学校的 WIFI',
+  description: '等待数据。请确保您已经连接到学校的 Wi-Fi',
   base: null,
 }
 const constructEndpointURL = path => new URL(path, currentPrinter.base)
@@ -240,7 +242,7 @@ const updatePrinter = async silent => {
         bw: { state:'unavaliable', message:'' },
         colored: { state:'idle', message:'' },
         halted: false,
-    }, '等待数据。请确保您已经连接到学校的 WIFI')
+    }, '等待数据。请确保您已经连接到学校的 Wi-Fi')
     console.log('No printers Avaliable')
   }
   endLoading()
