@@ -45,7 +45,12 @@ def process_print():
         return 'Wrong Signature', 401
     config = json.loads(config)
     session = get_session_by_code(code)
-
+    if session == None:
+        logger.exception('A dismatch is found; recorded: {print-code: "%s"} '%(code))
+        return json.dumps({
+                'status': 3,
+                'message': 'Code does not exist; a dismatch between servers are discovered; recorded'
+        })
     if session.get_debt() > 0:
         pay_result = pay(session.get_kiuid(), session.get_debt())
         if pay_result[0]:
