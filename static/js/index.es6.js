@@ -340,6 +340,7 @@ const uploadFile = async fileObject => {
     endLoading()
     if (response.status === 0) {
       response = response.response
+      console.log('Creating job card: ', response)
       addJob(fileObject.name, response.code, response.id, response.config, response['page-count'])
     }
   })
