@@ -2,17 +2,178 @@ body {
     flex-direction: column;
 }
 .file-drop-container {
-    display: block;
-    margin: 16px;
+    display: flex;
+    margin: 0;
 }
 .file-drop-zone {
-    border: 4px dashed var(--mdc-theme-primary);
-    border-radius: 20px;
-    max-width: 90%;
-    max-height: 90%;
-    padding: 64px;
+    width: 80%;
+    border: 1px dashed var(--mdc-theme-primary);
+    border-radius: 4px;
+    padding: 16px;
+    margin-top: 8px;
+    transition: box-shadow 0.3s ease;
+    box-sizing: border-box;
 }
-.printer-logo {
+.file-drop-zone__focused{
+    box-shadow: inset 0 0 4px 1px var(--mdc-theme-primary);   
+}
+
+.file-drop__helper {
+    opacity: 100%;
+    transition: opacity 0.5s ease;
+}
+
+.printer-card {
+    padding: 32px 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+}
+.printer-card__logo {
     border-radius: 50%;
-    max-width: 300px;
+    max-width: 128px;
+    margin: 16px;
+}
+#printer-info {
+    margin: 8px 0;
+}
+
+.printer-card__content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    justify-content: space-evenly;
+
+}
+.printer-card__status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    
+}
+.printer-status {
+    margin-right: 8px;
+}
+.printer-status__avaliable {
+    color: greenyellow;
+}
+.printer-status__busy {
+    color: yellow;
+}
+.printer-status__unavaliable {
+    color: red;
+}
+.printer-status__fixing {
+    color: purple;
+}
+.mdc-typography--headline5 {
+    margin: 8px 0 0 0;
+}
+.file-list-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+}
+.job-card {
+    margin: 8px 0;
+    padding: 16px;
+    width: 100%;
+    text-align: left;
+}
+.job-card--content {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+.job-title {
+    margin-right: 16px;
+    max-width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.job-card--options {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    min-width: 380px;
+    margin-bottom: 16px;
+}
+.job-card-pad {
+    flex: 1;
+}
+.switch-divider {
+    border-left: 1px solid #e0e0e0;
+    height: 32px;
+    margin: 0 16px;
+}
+.mdc-switch {
+    margin-left: 16px;
+}
+.switch {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.copies {
+    width: 120px;
+}
+
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+    color: var(--mdc-theme-primary);
+}
+
+.mdc-text-field--focused .mdc-text-field__input:required~.mdc-floating-label::after,.mdc-text-field--focused .mdc-text-field__input:required~.mdc-notched-outline .mdc-floating-label::after {
+    color: var(--mdc-theme-primary);
+    color: var(--mdc-theme-primary);
+    
+}
+
+.mdc-text-field {
+    margin-top: 16px;
+}
+.invisible {
+    display: none;
+}
+
+@media(max-width: 720px) {
+    .file-list-container {
+        width: 90%;
+    }
+    .printer-card {
+        flex-direction: column;
+        align-items: center;
+    }
+    .job-card--options {
+        align-self: center;
+        text-align: center;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+    }
+    .job-card--content {
+        flex-direction: column;
+    }
+    .drag-info {
+        display: none;
+    }
+    .job-title {
+        width: 100%;
+        max-width: 100%;
+    }
+    .switch {
+        margin-top: 16px;
+    }
+    .switch-divider {
+        display: none;
+    }
+}
+
+.job-wrapper {
+    width: 100%;
 }

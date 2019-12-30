@@ -9,8 +9,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/button@2.3.0/dist/mdc.button.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/typography@2.3.0/dist/mdc.typography.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/top-app-bar@2.3.0/dist/mdc.top-app-bar.min.css" />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/linear-progress@2.3.0/dist/mdc.linear-progress.min.css" />
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/elevation/dist/mdc.elevation.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/switch@2.3.0/dist/mdc.switch.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/textfield@2.3.0/dist/mdc.textfield.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material/dialog@2.3.0/dist/mdc.dialog.min.css" />
     <link rel="stylesheet" href="/static/css/framework.css" />
+    
+    
     {% block stylesheet %}
     {% endblock stylesheet %}
   </head>
@@ -30,6 +38,21 @@
     {% block content %}
 
     {% endblock content %}  
+    </div>
+    {% block script %}
+    {% endblock script %}
+    <div style="display: none;">
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155134803-1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-155134803-1');
+      </script>
+
+      <script  type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1278518279'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/z_stat.php%3Fid%3D1278518279%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
     </div>
   </body>
 </html>

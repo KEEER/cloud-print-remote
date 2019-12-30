@@ -1,5 +1,5 @@
 # [In-project modules]
-from utils.kas_manager import token_is_valid
+from utils.kas_manager import token_is_valid, login
 from config import ServerConfig
 # [Python native modules]
 
@@ -29,9 +29,9 @@ def login_required(processing_function):
     """
     def wrapper(*args, **kwargs):
         if request.cookies.get('kas-account-token', '') == '':
-            return redirect('/')
+            return redirect(login())
         elif not token_is_valid(request.cookies.get('kas-account-token')):
-            response = make_response(redirect('/'))
+            response = make_response(redirect(login()))
             if not ServerConfig.debug:
                 # in the real server
                 response.set_cookie('kas-account-token', '', max_age = 0, domain = '.keeer.net')

@@ -59,7 +59,7 @@ class Session:
             # remove from the database
             with connect_to_database() as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute('DELETE from print_codes where code = %s', (code, ))
+                    cursor.execute('DELETE FROM print_codes WHERE code = %s;', (code, ))
             self._jobs.remove(code)
             self.job_number -= 1
             self.save()
@@ -84,7 +84,7 @@ class Session:
         code = self._generate_random_codes()
         while not self._code_is_valid(code):
             code = self._generate_random_codes()
-
+        
         # update code into database 
         with connect_to_database() as connection:
             with connection.cursor() as cursor:
@@ -127,9 +127,6 @@ class Session:
                     # create a copy of the list
                     self._jobs = [i for i in result[0]] 
                     self._debt = result[1]
-
-    def __del__(self):
-        self.save()
 _sessions = {}
 
 def get_session_by_code(code):
@@ -140,17 +137,11 @@ def get_session_by_code(code):
             if result == None:
                 return None
             result = result[0]
-            return Session(result)
+            return Session(kiuid = result)
 
 def get_session_by_token(token):
-    global _sessions
-    if not token in _sessions:
-        if token_is_valid(token):
-            new_session = Session(token = token)
-            _sessions.update({token: new_session})
-            return new_session
-    else:
-        return _sessions.get(token)
+    return Session(token = token)
+
 
 def delete_session_status(token):
     """

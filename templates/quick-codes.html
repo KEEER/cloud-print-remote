@@ -1,0 +1,25 @@
+{% extends 'framework.html' %}
+
+{% block title %} 上传文件 | Cloud Print {% endblock title%}
+
+{% block stylesheet%}
+<style>
+.card {
+  margin-top: 16px;
+  color: #424242;
+  padding: 16px;
+}
+</style>
+{% endblock stylesheet %}
+
+{% block content %}
+  {% for code in CODES %}
+  <div class="mdc-card card">
+    <h5 class="mdc-typography--headline5">打印码：{{code}}</h5>
+  </div>
+  {% endfor %}
+  <p class="mdc-typography--body2">请前往打印机处进行打印 ~</p>
+    
+
+  <a style="margin: 16px;" class="mdc-button mdc-button--raised" href="https://wj.qq.com/s2/5214715/2844/">反馈一个 Bug</a>
+{% endblock content %}

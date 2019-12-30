@@ -18,8 +18,8 @@ class CONSTS:
     }
     NAME = '登录 Cloud Print'
     # These two are just demo
-    LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Overwatch_circle_logo.svg/600px-Overwatch_circle_logo.svg.png'
-    BACKGROUND_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdREANHAoSAAozc-OTddNReGMM82DBhCmhWXFuKzTREhFw_7MO'
+    LOGO_URL = ServerConfig.public_address + '/static/img/logo.png'
+    BACKGROUND_URL = ServerConfig.public_address + '/static/img/background.webp'
     THEME = 'f57c00'
 class FailedToGetKiuidError(Exception):
     pass
@@ -72,19 +72,29 @@ def pay(kiuid, amount):
         params = {
             'kiuid': kiuid,
             'amount': amount,
-            'sign': kas_sign(kiuid)
+            'sign': kas_sign(kiuid+str(amount))
         },
         headers = CONSTS.REQUEST_HEADER
     )
     if response.status_code != 200:
         raise Exception(response.text,response.status_code)
-        return False
     response = response.json()
     if response['status'] == 0:
         return True, '成功'
     return False, response['message']
 
-
+def get_kredit_amount(token):
+    response = requests.get(
+        'https://account.keeer.net/api/kredit/request',
+        params = {
+            'token': token
+        },
+        headers = CONSTS.REQUEST_HEADER
+    )
+    if response.status_code != 200:
+        raise Exception(response.text,response.status_code)
+    response = response.json()
+    return response['result']
 def login():
     return 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s&theme=%s' % (
         CONSTS.NAME,
