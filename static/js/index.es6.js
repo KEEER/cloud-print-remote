@@ -205,6 +205,7 @@ const updatePrinter = async silent => {
 
   console.log('Get printer config: ', printerConfigs)
   console.log(Object.keys(printerConfigs))
+  var stillConnected = false
   for (let id of Object.keys(printerConfigs)) {
     const ip = printerConfigs[id]
     if (!silent) startLoading(`尝试连接到打印机：#${id}`)
@@ -229,6 +230,7 @@ const updatePrinter = async silent => {
       }
       console.log('Status: ', config)
       printerCard.setPrinterInfo(currentPrinter.name, currentPrinter.status, currentPrinter.description)
+      stillConnected = true
       break
     } catch (e) {
       console.log('Failed.', e)
@@ -236,7 +238,7 @@ const updatePrinter = async silent => {
     }
   }
   $('#printer-logo').src = '/static/img/logo.png'
-  if (currentPrinter.base === null) {
+  if (currentPrinter.base === null || !stillConnected) {
     $('#printer-logo').src = '/static/img/NotConnected.png'
     printerCard.setPrinterInfo('等待数据', {
         bw: { state:'unavaliable', message:'' },
