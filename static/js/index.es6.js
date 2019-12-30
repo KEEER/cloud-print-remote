@@ -142,7 +142,7 @@ const addJob = async (fileName, code, id, config, pageCount) => {
         errorCorrectionLevel: 'H',
         type: 'image/png',
         margin: 1,
-        color:  { dark: '#000000FF', light: '#F3E5F5FF' }
+        color:  { dark: '#424242FF', light: '#FFFFFFFF' }
       }, (_e, res) => resolve(res))
     })
     popDialog(code)

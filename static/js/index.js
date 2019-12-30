@@ -183,7 +183,7 @@ function () {
                           errorCorrectionLevel: 'H',
                           type: 'image/png',
                           margin: 1,
-                          color: { dark: '#000000FF', light: '#F3E5F5FF' }
+                          color: { dark: '#424242FF', light: '#FFFFFFFF' }
                         }, function (_e, res) {
                           return resolve(res);
                         });
