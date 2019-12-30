@@ -362,7 +362,7 @@ const updateSession = async silent => {
         console.log('Loading Job: ', config)
         // detect whether the job exists
         if ($(`#job-${config.code}`) === null)
-          addJob(config.file, config.code, '', config.config, config.pageCount)
+          addJob(config.file, config.code, '', config.config, config['page-count'])
       }
     }
   }

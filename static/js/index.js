@@ -843,7 +843,7 @@ function () {
               config = _step.value;
               console.log('Loading Job: ', config); // detect whether the job exists
 
-              if ($("#job-".concat(config.code)) === null) addJob(config.file, config.code, '', config.config, config.pageCount);
+              if ($("#job-".concat(config.code)) === null) addJob(config.file, config.code, '', config.config, config['page-count'])
             }
 
             _context14.next = 21;
