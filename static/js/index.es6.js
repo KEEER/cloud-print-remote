@@ -209,7 +209,7 @@ const updatePrinter = async silent => {
   for (let id of Object.keys(printerConfigs)) {
     const ip = printerConfigs[id]
     if (!silent) startLoading(`尝试连接到打印机：#${id}`)
-    const base = new URL(`https://${ip.replace(/\./g, '-')}.ip.kcps.monster`)
+    const base = new URL(`https://${ip.replace(/\./g, '-')}.ip2.kcps.monster`)
     console.log('Trying printer id: ', id)
   
     try {

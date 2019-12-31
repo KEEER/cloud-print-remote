@@ -346,7 +346,7 @@ function () {
                       id = _Object$keys[_i];
                       ip = printerConfigs[id];
                       if (!silent) startLoading("\u5C1D\u8BD5\u8FDE\u63A5\u5230\u6253\u5370\u673A\uFF1A#".concat(id));
-                      base = new URL("https://".concat(ip.replace(/\./g, '-'), ".ip.kcps.monster"));
+                      base = new URL("https://".concat(ip.replace(/\./g, '-'), ".ip2.kcps.monster"));
                       console.log('Trying printer id: ', id);
                       _context5.prev = 5;
                       _context5.next = 8;
