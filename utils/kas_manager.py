@@ -77,13 +77,15 @@ def token_is_valid(token):
         return True
 
 def pay(kiuid, amount):
-    response = requests.post(
-        _construct_pay_url(),
-        data = {
+    form = {
             'type': 'kiuid',
             'identity': kiuid,
-            'amount': amount
-        },
+            'amount': int(amount)
+        }
+    logger.debug('Trying to pay with form %s'%form)
+    response = requests.post(
+        _construct_pay_url(),
+        data = form,
         headers = _construct_rs_header(),
     )
     if response.status_code != 200:
@@ -113,6 +115,7 @@ def get_kredit_amount(token):
     response = response.json()
     logger.debug('Kredit fetch response: %s'%response)
     return response.get('kredit', 0)
+
 def login():
     # TODO
     return 'https://account.keeer.net/login?service=cloud-print'
@@ -123,3 +126,5 @@ def login():
     #     CONSTS.BACKGROUND_URL,
     #     CONSTS.THEME
     # )
+
+

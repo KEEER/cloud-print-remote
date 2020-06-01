@@ -11,6 +11,7 @@ class CONSTS:
         Q_AND_A = '/Q-A'
         ADVANCED_TIPS = '/advanced-tips'
         WELCOME = '/welcome'
+        
 @frontend_blueprint.route(CONSTS.ROUTES.Q_AND_A, methods = ['GET'])
 def process_question():
     return render_template('question_and_answers.html')
