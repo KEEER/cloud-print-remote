@@ -115,7 +115,7 @@ def get_kredit_amount(token):
     return response.get('kredit', 0)
 def login():
     # TODO
-    return 'https://account.keeer.net'
+    return 'https://account.keeer.net/login?service=cloud-print'
     # 'https://account.keeer.net/customized-login?name=%s&logo=%s&redirect=%s&background=%s&theme=%s' % (
     #     CONSTS.NAME,
     #     CONSTS.LOGO_URL,
