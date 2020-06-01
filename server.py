@@ -1,7 +1,8 @@
 # [In-project modules]
-from config import ServerConfig
 from utils.logger import initialize_logging_module
+initialize_logging_module() # has to break the rule here otherwise the logging module won't work
 
+from config import ServerConfig
 from backend.account_related.account_related_blueprint import account_related_blueprint
 from backend.independent.independent_blueprint import independent_blueprint
 from backend.printer_related.printer_related_blueprint import printer_related_blueprint
@@ -12,7 +13,7 @@ import logging
 from flask import Flask
 import waitress
 
-initialize_logging_module()
+
 
 # don't use __name__ for this one, but for ALL others
 main_logger = logging.getLogger('main')
